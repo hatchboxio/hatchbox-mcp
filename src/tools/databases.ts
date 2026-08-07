@@ -98,7 +98,9 @@ export function registerDatabasesTools(server: McpServer, client: HatchboxClient
     "hatchbox_update_database",
     {
       title: "Update Database",
-      description: "Update a database on a Hatchbox database cluster.",
+      description:
+        "Update a database on a Hatchbox database cluster. Only SQLite databases can be updated — fails with a 422 " +
+        "on any other engine (postgresql, mysql, redis, etc.).",
       inputSchema: {
         ...clusterIdSchema,
         database_id: z.number().int().describe("Numeric database id."),
