@@ -1,0 +1,30 @@
+{
+  "name": "hatchbox-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that wraps the Hatchbox /api/v1 API",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "hatchbox-mcp": "build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js",
+    "dev": "tsx src/index.ts",
+    "start": "node build/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "tsx": "^4.23.10",
+    "typescript": "^7.0.2"
+  }
+}
