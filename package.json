@@ -13,7 +13,9 @@
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
     "dev": "tsx src/index.ts",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "tsx": "^4.23.10",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   }
 }

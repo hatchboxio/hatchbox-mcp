@@ -59,4 +59,3 @@ npm start      # run the compiled build/index.js
 
 - The token has no scoping — it's effectively full access as the owning user, gated only by that user's account/subscription status. Treat it like a password.
 - Every endpoint is subscription-gated (402) except account discovery — a lapsed/never-paid account can't use the API.
-- Requests are rate limited server-side (300/min general, 30/min for actions that queue SSH work like restart/deploy/backups). A 429 includes a `Retry-After` header; the tool surfaces this as a readable error.
