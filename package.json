@@ -1,5 +1,5 @@
 {
-  "name": "@hatchboxio/hatchbox-mcp",
+  "name": "@hatchbox/hatchbox-mcp",
   "version": "0.1.0",
   "description": "MCP server that wraps the Hatchbox /api/v1 API",
   "type": "module",

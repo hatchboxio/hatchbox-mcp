@@ -29,7 +29,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 
    **Claude Code:**
    ```
-   claude mcp add hatchbox -- npx -y @hatchboxio/hatchbox-mcp
+   claude mcp add hatchbox -- npx -y @hatchbox/hatchbox-mcp
    ```
    Then set `HATCHBOX_BASE_URL` and `HATCHBOX_API_TOKEN` for that server (see `claude mcp add --help` for passing env vars, or edit `.mcp.json` directly).
 
@@ -39,7 +39,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
      "mcpServers": {
        "hatchbox": {
          "command": "npx",
-         "args": ["-y", "@hatchboxio/hatchbox-mcp"],
+         "args": ["-y", "@hatchbox/hatchbox-mcp"],
          "env": {
            "HATCHBOX_BASE_URL": "https://hatchbox.io/api/v1",
            "HATCHBOX_API_TOKEN": "your-token-here"
