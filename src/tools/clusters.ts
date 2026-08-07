@@ -1,38 +1,21 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { HatchboxClient } from "../client.js";
-import { jsonResult, missingFields, runAction } from "./helpers.js";
+import { jsonResult, READ_ONLY, runAction } from "./helpers.js";
 
-const inputSchema = {
-  action: z.enum(["show"]).describe("show: requires cluster_id."),
-  cluster_id: z
-    .number()
-    .int()
-    .describe("Numeric cluster id (see hatchbox_accounts action=list_clusters). Required.")
-    .optional(),
-};
-
-export function registerClustersTool(server: McpServer, client: HatchboxClient) {
+export function registerClustersTools(server: McpServer, client: HatchboxClient) {
   server.registerTool(
-    "hatchbox_clusters",
+    "hatchbox_get_cluster",
     {
-      title: "Hatchbox Clusters",
+      title: "Get Hatchbox Cluster",
       description:
-        "Read a Hatchbox server cluster, with its servers embedded under a `servers` key. Read-only. " +
-        "For a standalone server list/show, use hatchbox_servers.",
-      inputSchema,
-      annotations: { readOnlyHint: true, openWorldHint: true },
+        "Fetch a Hatchbox server cluster, with its servers embedded under a `servers` key. For a standalone server " +
+        "list/get, use hatchbox_list_servers / hatchbox_get_server.",
+      inputSchema: {
+        cluster_id: z.number().int().describe("Numeric cluster id (see hatchbox_list_account_clusters)."),
+      },
+      annotations: READ_ONLY,
     },
-    async (args) =>
-      runAction(async () => {
-        const { action, cluster_id } = args;
-        switch (action) {
-          case "show": {
-            const err = missingFields(args, ["cluster_id"], action);
-            if (err) return err;
-            return jsonResult(await client.get(`/clusters/${cluster_id}`));
-          }
-        }
-      }),
+    async ({ cluster_id }) => runAction(async () => jsonResult(await client.get(`/clusters/${cluster_id}`))),
   );
 }

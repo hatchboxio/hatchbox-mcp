@@ -1,50 +1,83 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { HatchboxClient } from "../client.js";
-import { jsonResult, missingFields, runAction } from "./helpers.js";
+import { jsonResult, READ_ONLY, runAction } from "./helpers.js";
 
-const inputSchema = {
-  action: z
-    .enum(["list", "show", "list_apps", "list_clusters", "list_database_clusters", "list_git_providers"])
-    .describe(
-      "list: every account you belong to, no params. " +
-        "show/list_apps/list_clusters/list_database_clusters/list_git_providers: require account_id.",
-    ),
-  account_id: z.number().int().describe("Numeric account id. Required for every action except 'list'.").optional(),
+const accountIdSchema = {
+  account_id: z.number().int().describe("Numeric account id."),
 };
 
-export function registerAccountsTool(server: McpServer, client: HatchboxClient) {
+export function registerAccountsTools(server: McpServer, client: HatchboxClient) {
   server.registerTool(
-    "hatchbox_accounts",
+    "hatchbox_list_accounts",
     {
-      title: "Hatchbox Accounts",
+      title: "List Hatchbox Accounts",
       description:
-        "Read Hatchbox account info and account-scoped collections (apps, clusters, database clusters, git providers). " +
-        "Start here to discover account_id and cluster_id values needed by other hatchbox_* tools. Read-only.",
-      inputSchema,
-      annotations: { readOnlyHint: true, openWorldHint: true },
+        "List every Hatchbox account you belong to. Start here to discover account_id values needed by other " +
+        "hatchbox_* tools. No parameters.",
+      inputSchema: {},
+      annotations: READ_ONLY,
     },
-    async (args) =>
-      runAction(async () => {
-        const { action, account_id } = args;
-        if (action !== "list") {
-          const err = missingFields(args, ["account_id"], action);
-          if (err) return err;
-        }
-        switch (action) {
-          case "list":
-            return jsonResult(await client.get("/accounts"));
-          case "show":
-            return jsonResult(await client.get(`/accounts/${account_id}`));
-          case "list_apps":
-            return jsonResult(await client.get(`/accounts/${account_id}/apps`));
-          case "list_clusters":
-            return jsonResult(await client.get(`/accounts/${account_id}/clusters`));
-          case "list_database_clusters":
-            return jsonResult(await client.get(`/accounts/${account_id}/database_clusters`));
-          case "list_git_providers":
-            return jsonResult(await client.get(`/accounts/${account_id}/git_providers`));
-        }
-      }),
+    async () => runAction(async () => jsonResult(await client.get("/accounts"))),
+  );
+
+  server.registerTool(
+    "hatchbox_get_account",
+    {
+      title: "Get Hatchbox Account",
+      description: "Fetch a single Hatchbox account by id.",
+      inputSchema: accountIdSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ account_id }) =>
+      runAction(async () => jsonResult(await client.get(`/accounts/${account_id}`))),
+  );
+
+  server.registerTool(
+    "hatchbox_list_account_apps",
+    {
+      title: "List Account Apps",
+      description: "List every app under a Hatchbox account.",
+      inputSchema: accountIdSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ account_id }) =>
+      runAction(async () => jsonResult(await client.get(`/accounts/${account_id}/apps`))),
+  );
+
+  server.registerTool(
+    "hatchbox_list_account_clusters",
+    {
+      title: "List Account Clusters",
+      description: "List every server cluster under a Hatchbox account.",
+      inputSchema: accountIdSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ account_id }) =>
+      runAction(async () => jsonResult(await client.get(`/accounts/${account_id}/clusters`))),
+  );
+
+  server.registerTool(
+    "hatchbox_list_account_database_clusters",
+    {
+      title: "List Account Database Clusters",
+      description: "List every database cluster under a Hatchbox account.",
+      inputSchema: accountIdSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ account_id }) =>
+      runAction(async () => jsonResult(await client.get(`/accounts/${account_id}/database_clusters`))),
+  );
+
+  server.registerTool(
+    "hatchbox_list_account_git_providers",
+    {
+      title: "List Account Git Providers",
+      description: "List every connected git provider under a Hatchbox account.",
+      inputSchema: accountIdSchema,
+      annotations: READ_ONLY,
+    },
+    async ({ account_id }) =>
+      runAction(async () => jsonResult(await client.get(`/accounts/${account_id}/git_providers`))),
   );
 }

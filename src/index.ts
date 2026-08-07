@@ -2,17 +2,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { clientFromEnv } from "./client.js";
-import { registerAccountsTool } from "./tools/accounts.js";
-import { registerMeTool } from "./tools/me.js";
-import { registerAppsTool } from "./tools/apps.js";
-import { registerDomainsTool } from "./tools/domains.js";
-import { registerEnvVarsTool } from "./tools/envVars.js";
-import { registerProcessesTool } from "./tools/processes.js";
-import { registerDatabasesTool } from "./tools/databases.js";
-import { registerClustersTool } from "./tools/clusters.js";
-import { registerServersTool } from "./tools/servers.js";
-import { registerBackupsTool } from "./tools/backups.js";
-import { registerLogsTool } from "./tools/logs.js";
+import { registerAccountsTools } from "./tools/accounts.js";
+import { registerMeTools } from "./tools/me.js";
+import { registerAppsTools } from "./tools/apps.js";
+import { registerDomainsTools } from "./tools/domains.js";
+import { registerEnvVarsTools } from "./tools/envVars.js";
+import { registerProcessesTools } from "./tools/processes.js";
+import { registerDatabasesTools } from "./tools/databases.js";
+import { registerClustersTools } from "./tools/clusters.js";
+import { registerServersTools } from "./tools/servers.js";
+import { registerBackupsTools } from "./tools/backups.js";
+import { registerLogsTools } from "./tools/logs.js";
 
 async function main() {
   const client = clientFromEnv();
@@ -22,17 +22,17 @@ async function main() {
     version: "0.1.0",
   });
 
-  registerAccountsTool(server, client);
-  registerMeTool(server, client);
-  registerAppsTool(server, client);
-  registerDomainsTool(server, client);
-  registerEnvVarsTool(server, client);
-  registerProcessesTool(server, client);
-  registerDatabasesTool(server, client);
-  registerClustersTool(server, client);
-  registerServersTool(server, client);
-  registerBackupsTool(server, client);
-  registerLogsTool(server, client);
+  registerAccountsTools(server, client);
+  registerMeTools(server, client);
+  registerAppsTools(server, client);
+  registerDomainsTools(server, client);
+  registerEnvVarsTools(server, client);
+  registerProcessesTools(server, client);
+  registerDatabasesTools(server, client);
+  registerClustersTools(server, client);
+  registerServersTools(server, client);
+  registerBackupsTools(server, client);
+  registerLogsTools(server, client);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

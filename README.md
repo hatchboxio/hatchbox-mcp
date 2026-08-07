@@ -4,23 +4,23 @@ An MCP server that wraps Hatchbox's `/api/v1` API, so an LLM agent can inspect a
 
 ## Tools
 
-Grouped by resource, each taking an `action` parameter:
+One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotation, grouped by resource:
 
-| Tool | Actions |
-|---|---|
-| `hatchbox_accounts` | list, show, list_apps, list_clusters, list_database_clusters, list_git_providers |
-| `hatchbox_me` | (single action — fetches the authenticated user) |
-| `hatchbox_apps` | show, create, update, restart, deploy, enable_auto_deploy, disable_auto_deploy |
-| `hatchbox_domains` | list, show, create, update, delete |
-| `hatchbox_env_vars` | create, update, delete |
-| `hatchbox_processes` | list, show, restart |
-| `hatchbox_databases` | list_for_app, show_for_app, list_for_cluster, show_for_cluster, create, update, attach, detach |
-| `hatchbox_clusters` | show (embeds servers) |
-| `hatchbox_servers` | list, show |
-| `hatchbox_backups` | create, latest |
-| `hatchbox_logs` | show — poll this after any async action (restart/deploy/backup) |
+| Resource | Read | Write |
+|---|---|---|
+| Accounts | `hatchbox_list_accounts`, `hatchbox_get_account`, `hatchbox_list_account_apps`, `hatchbox_list_account_clusters`, `hatchbox_list_account_database_clusters`, `hatchbox_list_account_git_providers` | — |
+| User | `hatchbox_get_me` | — |
+| Apps | `hatchbox_get_app` | `hatchbox_create_app`, `hatchbox_update_app`, `hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_enable_app_auto_deploy`, `hatchbox_disable_app_auto_deploy` |
+| Domains | `hatchbox_list_domains`, `hatchbox_get_domain` | `hatchbox_create_domain`, `hatchbox_update_domain`, `hatchbox_delete_domain` |
+| Env vars | — | `hatchbox_create_env_vars`, `hatchbox_update_env_vars`, `hatchbox_delete_env_vars` |
+| Processes | `hatchbox_list_processes`, `hatchbox_get_process` | `hatchbox_restart_process` |
+| Databases | `hatchbox_list_app_databases`, `hatchbox_get_app_database`, `hatchbox_list_cluster_databases`, `hatchbox_get_cluster_database` | `hatchbox_create_database`, `hatchbox_update_database`, `hatchbox_attach_database`, `hatchbox_detach_database` |
+| Clusters | `hatchbox_get_cluster` (embeds servers) | — |
+| Servers | `hatchbox_list_servers`, `hatchbox_get_server` | — |
+| Backups | `hatchbox_get_latest_backup` | `hatchbox_create_backup` |
+| Logs | `hatchbox_get_log` | — |
 
-Restart, deploy, and backup-create are asynchronous: they return a `log_id` you follow up on with `hatchbox_logs` until `state` is `completed`/`failed`/`aborted`.
+`hatchbox_restart_app`, `hatchbox_deploy_app`, and `hatchbox_create_backup` are asynchronous: they return a `log_id` you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`.
 
 ## Setup
 

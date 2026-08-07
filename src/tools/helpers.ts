@@ -1,5 +1,11 @@
 import { HatchboxApiError } from "../client.js";
 
+/** Annotations for tools that only read data (safe HTTP methods). */
+export const READ_ONLY = { readOnlyHint: true, openWorldHint: true } as const;
+
+/** Annotations for tools that create/update/delete data (unsafe HTTP methods). */
+export const WRITE = { destructiveHint: true, openWorldHint: true } as const;
+
 export type ToolResult = {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
@@ -15,20 +21,6 @@ export function textResult(text: string): ToolResult {
 
 export function errorResult(text: string): ToolResult {
   return { content: [{ type: "text", text }], isError: true };
-}
-
-/**
- * Checks that the given keys are present (not undefined) on args, returning a
- * ready-to-return error result naming the action and the missing fields if not.
- * Needed because per-action required fields can't be expressed in the flat
- * object schema the SDK requires (see README/memory: z.discriminatedUnion as a
- * tool's top-level inputSchema silently degrades to an empty JSON Schema in
- * @modelcontextprotocol/sdk 1.30 — every field here has to be `.optional()`).
- */
-export function missingFields(args: Record<string, unknown>, keys: string[], action: string): ToolResult | null {
-  const missing = keys.filter((k) => args[k] === undefined || args[k] === null);
-  if (missing.length === 0) return null;
-  return errorResult(`action=${action} requires: ${missing.join(", ")}`);
 }
 
 /** Runs a tool action, translating HatchboxApiError into an MCP tool error instead of throwing. */

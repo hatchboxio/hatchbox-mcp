@@ -1,39 +1,21 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { HatchboxClient } from "../client.js";
-import { jsonResult, missingFields, runAction } from "./helpers.js";
+import { jsonResult, READ_ONLY, runAction } from "./helpers.js";
 
-const inputSchema = {
-  action: z.enum(["show"]).describe("show: requires log_id."),
-  log_id: z
-    .number()
-    .int()
-    .describe("Numeric log id, returned by whichever action started the async job (restart/deploy/backup create). Required.")
-    .optional(),
-};
-
-export function registerLogsTool(server: McpServer, client: HatchboxClient) {
+export function registerLogsTools(server: McpServer, client: HatchboxClient) {
   server.registerTool(
-    "hatchbox_logs",
+    "hatchbox_get_log",
     {
-      title: "Hatchbox Logs",
+      title: "Get Hatchbox Log",
       description:
-        "Read a Hatchbox job log (deploys, restarts, backups, provisioning) and its child logs. Read-only. " +
-        "Poll this after hatchbox_apps action=restart/deploy or hatchbox_backups action=create until `state` is " +
-        "completed/failed/aborted.",
-      inputSchema,
-      annotations: { readOnlyHint: true, openWorldHint: true },
+        "Read a Hatchbox job log (deploys, restarts, backups, provisioning) and its child logs. Poll this after " +
+        "hatchbox_restart_app, hatchbox_deploy_app, or hatchbox_create_backup until `state` is completed/failed/aborted.",
+      inputSchema: {
+        log_id: z.number().int().describe("Numeric log id, returned by whichever action started the async job."),
+      },
+      annotations: READ_ONLY,
     },
-    async (args) =>
-      runAction(async () => {
-        const { action, log_id } = args;
-        switch (action) {
-          case "show": {
-            const err = missingFields(args, ["log_id"], action);
-            if (err) return err;
-            return jsonResult(await client.get(`/logs/${log_id}`));
-          }
-        }
-      }),
+    async ({ log_id }) => runAction(async () => jsonResult(await client.get(`/logs/${log_id}`))),
   );
 }
