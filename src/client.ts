@@ -113,13 +113,13 @@ export function clientFromEnv(): HatchboxClient {
   const token = process.env.HATCHBOX_API_TOKEN;
 
   if (!baseUrl) {
-    throw new Error("HATCHBOX_BASE_URL is not set. Point it at your Hatchbox instance, e.g. https://app.hatchbox.io");
+    throw new Error("HATCHBOX_BASE_URL is not set. Point it at the Hatchbox API, e.g. https://hatchbox.io/api/v1");
   }
   if (!token) {
     throw new Error(
-      "HATCHBOX_API_TOKEN is not set. Create one at <your Hatchbox instance>/api_tokens and set it in the MCP server config.",
+      "HATCHBOX_API_TOKEN is not set. Create one at https://hatchbox.io/api_tokens and set it in the MCP server config.",
     );
   }
 
-  return new HatchboxClient({ baseUrl: `${baseUrl.replace(/\/+$/, "")}/api/v1`, token });
+  return new HatchboxClient({ baseUrl, token });
 }

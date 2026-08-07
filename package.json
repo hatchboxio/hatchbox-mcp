@@ -1,5 +1,5 @@
 {
-  "name": "hatchbox-mcp",
+  "name": "@hatchboxio/hatchbox-mcp",
   "version": "0.1.0",
   "description": "MCP server that wraps the Hatchbox /api/v1 API",
   "type": "module",
@@ -17,9 +17,28 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "hatchbox",
+    "claude",
+    "hosting",
+    "deployment",
+    "devops"
+  ],
+  "author": "Hatchbox",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hatchboxio/hatchbox-mcp.git"
+  },
+  "homepage": "https://github.com/hatchboxio/hatchbox-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/hatchboxio/hatchbox-mcp/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.4.3"

@@ -25,35 +25,55 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 ## Setup
 
 1. **Get an API token.** Log into your Hatchbox web app, go to `/api_tokens` → New API Token, name it, and copy the revealed token value.
-2. **Install dependencies and build:**
+2. **Add it to your MCP client config.** No install step needed — `npx` fetches and runs the package on demand.
+
+   **Claude Code:**
    ```
-   npm install
-   npm run build
+   claude mcp add hatchbox -- npx -y @hatchboxio/hatchbox-mcp
    ```
-3. **Add it to your MCP client config**, e.g. Claude Code (`.mcp.json` or `claude mcp add`) or Claude Desktop (`claude_desktop_config.json`):
+   Then set `HATCHBOX_BASE_URL` and `HATCHBOX_API_TOKEN` for that server (see `claude mcp add --help` for passing env vars, or edit `.mcp.json` directly).
+
+   **Claude Desktop** (`claude_desktop_config.json`):
    ```json
    {
      "mcpServers": {
        "hatchbox": {
-         "command": "node",
-         "args": ["/absolute/path/to/hatchbox-mcp-v2/build/index.js"],
+         "command": "npx",
+         "args": ["-y", "@hatchboxio/hatchbox-mcp"],
          "env": {
-           "HATCHBOX_BASE_URL": "https://your-hatchbox-instance.example.com",
+           "HATCHBOX_BASE_URL": "https://hatchbox.io/api/v1",
            "HATCHBOX_API_TOKEN": "your-token-here"
          }
        }
      }
    }
    ```
-   For local development against `bin/dev`, `HATCHBOX_BASE_URL` is typically `http://app.lvh.me:3000`.
+   `HATCHBOX_BASE_URL` should always be `https://hatchbox.io/api/v1` — it's the same for every customer, not a per-account or per-instance value.
 
 ## Development
 
+To work on `hatchbox-mcp` itself rather than just using it:
+
 ```
+git clone git@github.com:hatchboxio/hatchbox-mcp.git
+cd hatchbox-mcp
+npm install
 npm run dev    # run directly from src/ via tsx, no build step
 npm run build  # compile to build/
 npm start      # run the compiled build/index.js
+npm test       # run the test suite
 ```
+
+To point an MCP client at your local build instead of the published package, use `node` with an absolute path in place of the `npx` command above:
+
+```json
+{
+  "command": "node",
+  "args": ["/absolute/path/to/hatchbox-mcp/build/index.js"]
+}
+```
+
+For local development against `bin/dev`, `HATCHBOX_BASE_URL` is typically `http://app.lvh.me:3000/api/v1`.
 
 ## Notes
 
