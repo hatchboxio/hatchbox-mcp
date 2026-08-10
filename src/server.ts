@@ -6,6 +6,7 @@ import { registerAppsTools } from "./tools/apps.js";
 import { registerDomainsTools } from "./tools/domains.js";
 import { registerEnvVarsTools } from "./tools/envVars.js";
 import { registerProcessesTools } from "./tools/processes.js";
+import { registerCronJobsTools } from "./tools/cronJobs.js";
 import { registerDatabasesTools } from "./tools/databases.js";
 import { registerClustersTools } from "./tools/clusters.js";
 import { registerServersTools } from "./tools/servers.js";
@@ -15,7 +16,7 @@ import { registerLogsTools } from "./tools/logs.js";
 export function createServer(client: HatchboxClient): McpServer {
   const server = new McpServer({
     name: "hatchbox-mcp",
-    version: "0.1.0",
+    version: "0.2.0",
   });
 
   registerAccountsTools(server, client);
@@ -24,6 +25,7 @@ export function createServer(client: HatchboxClient): McpServer {
   registerDomainsTools(server, client);
   registerEnvVarsTools(server, client);
   registerProcessesTools(server, client);
+  registerCronJobsTools(server, client);
   registerDatabasesTools(server, client);
   registerClustersTools(server, client);
   registerServersTools(server, client);

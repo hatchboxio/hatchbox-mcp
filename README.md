@@ -14,6 +14,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Domains | `hatchbox_list_domains`, `hatchbox_get_domain` | `hatchbox_create_domain`, `hatchbox_update_domain`, `hatchbox_delete_domain` |
 | Env vars | — | `hatchbox_create_env_vars`, `hatchbox_update_env_vars`, `hatchbox_delete_env_vars` |
 | Processes | `hatchbox_list_processes`, `hatchbox_get_process` | `hatchbox_restart_process` |
+| Cron jobs | `hatchbox_list_cron_jobs`, `hatchbox_get_cron_job` | `hatchbox_create_cron_job`, `hatchbox_update_cron_job`, `hatchbox_delete_cron_job` |
 | Databases | `hatchbox_list_app_databases`, `hatchbox_get_app_database`, `hatchbox_list_cluster_databases`, `hatchbox_get_cluster_database` | `hatchbox_create_database`, `hatchbox_update_database`, `hatchbox_attach_database`, `hatchbox_detach_database` |
 | Clusters | `hatchbox_get_cluster` (embeds servers) | — |
 | Servers | `hatchbox_list_servers`, `hatchbox_get_server` | — |
