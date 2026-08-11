@@ -17,11 +17,11 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Cron jobs | `hatchbox_list_cron_jobs`, `hatchbox_get_cron_job` | `hatchbox_create_cron_job`, `hatchbox_update_cron_job`, `hatchbox_delete_cron_job` |
 | Databases | `hatchbox_list_app_databases`, `hatchbox_get_app_database`, `hatchbox_list_cluster_databases`, `hatchbox_get_cluster_database` | `hatchbox_create_database`, `hatchbox_update_database`, `hatchbox_attach_database`, `hatchbox_detach_database` |
 | Clusters | `hatchbox_get_cluster` (embeds servers) | — |
-| Servers | `hatchbox_list_servers`, `hatchbox_get_server` | — |
-| Backups | `hatchbox_get_latest_backup` | `hatchbox_create_backup` |
+| Servers | `hatchbox_list_servers`, `hatchbox_get_server` | `hatchbox_provision_server`, `hatchbox_reboot_server` |
+| Backups | `hatchbox_get_latest_backup`, `hatchbox_get_backup_configuration` | `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups` |
 | Logs | `hatchbox_get_log` | — |
 
-`hatchbox_restart_app`, `hatchbox_deploy_app`, and `hatchbox_create_backup` are asynchronous: they return a `log_id` you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`.
+`hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, and `hatchbox_reboot_server` are asynchronous: they return a `log_id` you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`.
 
 ## Setup
 
