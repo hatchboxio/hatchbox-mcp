@@ -48,7 +48,6 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
      }
    }
    ```
-   `HATCHBOX_BASE_URL` defaults to `https://hatchbox.io/api/v1` and normally doesn't need to be set — only override it (e.g. for local development against `bin/dev`) if you're running against a different Hatchbox instance.
 
 ## Development
 
