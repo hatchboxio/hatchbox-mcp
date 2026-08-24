@@ -117,9 +117,16 @@ describe("clientFromEnv", () => {
     process.env = { ...originalEnv };
   });
 
-  it("throws when HATCHBOX_BASE_URL is missing", () => {
+  it("defaults to the production API when HATCHBOX_BASE_URL is missing", async () => {
     process.env.HATCHBOX_API_TOKEN = "t";
-    expect(() => clientFromEnv()).toThrow(/HATCHBOX_BASE_URL/);
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, {}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await clientFromEnv().get("/me");
+
+    const url = fetchMock.mock.calls[0][0] as URL;
+    expect(url.origin + url.pathname).toBe("https://hatchbox.io/api/v1/me");
+    vi.unstubAllGlobals();
   });
 
   it("throws when HATCHBOX_API_TOKEN is missing", () => {

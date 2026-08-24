@@ -13,7 +13,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Apps | `hatchbox_get_app` | `hatchbox_create_app`, `hatchbox_update_app`, `hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_enable_app_auto_deploy`, `hatchbox_disable_app_auto_deploy` |
 | Domains | `hatchbox_list_domains`, `hatchbox_get_domain` | `hatchbox_create_domain`, `hatchbox_update_domain`, `hatchbox_delete_domain` |
 | Env vars | — | `hatchbox_create_env_vars`, `hatchbox_update_env_vars`, `hatchbox_delete_env_vars` |
-| Processes | `hatchbox_list_processes`, `hatchbox_get_process` | `hatchbox_restart_process` |
+| Processes | `hatchbox_list_processes`, `hatchbox_get_process` | `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, `hatchbox_disable_process`, `hatchbox_restart_process` |
 | Cron jobs | `hatchbox_list_cron_jobs`, `hatchbox_get_cron_job` | `hatchbox_create_cron_job`, `hatchbox_update_cron_job`, `hatchbox_delete_cron_job` |
 | Databases | `hatchbox_list_app_databases`, `hatchbox_get_app_database`, `hatchbox_list_cluster_databases`, `hatchbox_get_cluster_database` | `hatchbox_create_database`, `hatchbox_update_database`, `hatchbox_attach_database`, `hatchbox_detach_database` |
 | Clusters | `hatchbox_get_cluster` (embeds servers) | — |
@@ -21,7 +21,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Backups | `hatchbox_get_latest_backup`, `hatchbox_get_backup_configuration` | `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups` |
 | Logs | `hatchbox_get_log` | — |
 
-`hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, and `hatchbox_reboot_server` are asynchronous: they return a `log_id` you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`.
+`hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, `hatchbox_reboot_server`, `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, and `hatchbox_disable_process` are asynchronous: they return a log id (as `log_id`, except `hatchbox_delete_process` which returns it as `id`) you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`. `hatchbox_enable_process`/`hatchbox_disable_process` return no log id when the process was already in that state (a no-op).
 
 ## Setup
 
@@ -32,7 +32,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
    ```
    claude mcp add hatchbox -- npx -y @hatchbox/hatchbox-mcp
    ```
-   Then set `HATCHBOX_BASE_URL` and `HATCHBOX_API_TOKEN` for that server (see `claude mcp add --help` for passing env vars, or edit `.mcp.json` directly).
+   Then set `HATCHBOX_API_TOKEN` for that server (see `claude mcp add --help` for passing env vars, or edit `.mcp.json` directly).
 
    **Claude Desktop** (`claude_desktop_config.json`):
    ```json
@@ -42,14 +42,13 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
          "command": "npx",
          "args": ["-y", "@hatchbox/hatchbox-mcp"],
          "env": {
-           "HATCHBOX_BASE_URL": "https://hatchbox.io/api/v1",
            "HATCHBOX_API_TOKEN": "your-token-here"
          }
        }
      }
    }
    ```
-   `HATCHBOX_BASE_URL` should always be `https://hatchbox.io/api/v1` — it's the same for every customer, not a per-account or per-instance value.
+   `HATCHBOX_BASE_URL` defaults to `https://hatchbox.io/api/v1` and normally doesn't need to be set — only override it (e.g. for local development against `bin/dev`) if you're running against a different Hatchbox instance.
 
 ## Development
 
