@@ -68,6 +68,21 @@ describe("HatchboxClient", () => {
     expect(result).toEqual({ id: 4, name: "User One" });
   });
 
+  it("returns parsed data alongside response headers for a paginated request", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify([{ id: 1 }]), {
+        status: 200,
+        headers: { "current-page": "1", "total-pages": "3", "total-count": "5", "page-limit": "2" },
+      }),
+    );
+    const client = new HatchboxClient({ baseUrl: "https://example.com", token: "t" });
+    const result = await client.getPaginated("/apps/1/logs", { limit: 2 });
+    expect(result.data).toEqual([{ id: 1 }]);
+    expect(result.headers["total-pages"]).toBe("3");
+    const url = fetchMock.mock.calls[0][0] as URL;
+    expect(url.searchParams.get("limit")).toBe("2");
+  });
+
   it("throws HatchboxApiError using the singular error field", async () => {
     fetchMock.mockResolvedValue(jsonResponse(404, { error: "Domain not found" }));
     const client = new HatchboxClient({ baseUrl: "https://example.com", token: "t" });

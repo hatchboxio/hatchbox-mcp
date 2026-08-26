@@ -19,9 +19,11 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Clusters | `hatchbox_get_cluster` (embeds servers) | — |
 | Servers | `hatchbox_list_servers`, `hatchbox_get_server` | `hatchbox_provision_server`, `hatchbox_reboot_server` |
 | Backups | `hatchbox_get_latest_backup`, `hatchbox_get_backup_configuration` | `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups` |
-| Logs | `hatchbox_get_log` | — |
+| Logs | `hatchbox_list_app_logs`, `hatchbox_get_log` | — |
 
 `hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, `hatchbox_reboot_server`, `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, and `hatchbox_disable_process` are asynchronous: they return a log id (as `log_id`, except `hatchbox_delete_process` which returns it as `id`) you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`. `hatchbox_enable_process`/`hatchbox_disable_process` return no log id when the process was already in that state (a no-op).
+
+`hatchbox_list_app_logs` is paginated (the only paginated tool so far): it returns `{ logs, pagination }`, where `pagination` carries `current_page`/`total_pages`/`total_count`/`page_limit`. `limit` defaults to and is capped at 100 server-side.
 
 ## Setup
 

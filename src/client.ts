@@ -34,6 +34,17 @@ export class HatchboxClient {
     return this.request("GET", path, { query });
   }
 
+  /** For paginated endpoints, which advertise page state in response headers rather than the JSON body. */
+  async getPaginated(
+    path: string,
+    query?: Record<string, string | number | undefined>,
+  ): Promise<{ data: unknown; headers: Record<string, string> }> {
+    return this.request("GET", path, { query, includeHeaders: true }) as Promise<{
+      data: unknown;
+      headers: Record<string, string>;
+    }>;
+  }
+
   async post(path: string, body?: unknown) {
     return this.request("POST", path, { body });
   }
@@ -49,7 +60,11 @@ export class HatchboxClient {
   private async request(
     method: string,
     path: string,
-    opts: { query?: Record<string, string | number | undefined>; body?: unknown } = {},
+    opts: {
+      query?: Record<string, string | number | undefined>;
+      body?: unknown;
+      includeHeaders?: boolean;
+    } = {},
   ): Promise<unknown> {
     const url = new URL(`${this.baseUrl}${path}`);
     for (const [key, value] of Object.entries(opts.query ?? {})) {
@@ -72,6 +87,10 @@ export class HatchboxClient {
 
     if (!response.ok) {
       throw new HatchboxApiError(response.status, describeError(response.status, parsed), parsed);
+    }
+
+    if (opts.includeHeaders) {
+      return { data: parsed, headers: Object.fromEntries(response.headers.entries()) };
     }
 
     return parsed;

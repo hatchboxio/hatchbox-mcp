@@ -16,7 +16,7 @@ import { registerLogsTools } from "./tools/logs.js";
 export function createServer(client: HatchboxClient): McpServer {
   const server = new McpServer({
     name: "hatchbox-mcp",
-    version: "0.4.0",
+    version: "0.5.0",
   });
 
   registerAccountsTools(server, client);
