@@ -18,12 +18,15 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Databases | `hatchbox_list_app_databases`, `hatchbox_get_app_database`, `hatchbox_list_cluster_databases`, `hatchbox_get_cluster_database` | `hatchbox_create_database`, `hatchbox_update_database`, `hatchbox_attach_database`, `hatchbox_detach_database` |
 | Clusters | `hatchbox_get_cluster` (embeds servers) | — |
 | Servers | `hatchbox_list_servers`, `hatchbox_get_server` | `hatchbox_provision_server`, `hatchbox_reboot_server` |
+| Firewall rules | `hatchbox_list_firewall_rules`, `hatchbox_get_firewall_rule` | `hatchbox_create_firewall_rule`, `hatchbox_delete_firewall_rule` |
 | Backups | `hatchbox_get_latest_backup`, `hatchbox_get_backup_configuration` | `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups` |
 | Logs | `hatchbox_list_app_logs`, `hatchbox_get_log` | — |
 
-`hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, `hatchbox_reboot_server`, `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, and `hatchbox_disable_process` are asynchronous: they return a log id (as `log_id`, except `hatchbox_delete_process` which returns it as `id`) you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`. `hatchbox_enable_process`/`hatchbox_disable_process` return no log id when the process was already in that state (a no-op).
+`hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, `hatchbox_reboot_server`, `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, `hatchbox_disable_process`, `hatchbox_create_firewall_rule`, and `hatchbox_delete_firewall_rule` are asynchronous: they return a log id (as `log_id`, except `hatchbox_delete_process` and `hatchbox_delete_firewall_rule`, which return it as `id`) you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`. `hatchbox_enable_process`/`hatchbox_disable_process` return no log id when the process was already in that state (a no-op).
 
-`hatchbox_list_app_logs` is paginated (the only paginated tool so far): it returns `{ logs, pagination }`, where `pagination` carries `current_page`/`total_pages`/`total_count`/`page_limit`. `limit` defaults to and is capped at 100 server-side.
+`hatchbox_list_app_logs` and `hatchbox_list_firewall_rules` are paginated: they return `{ logs, pagination }` / `{ firewall_rules, pagination }` respectively, where `pagination` carries `current_page`/`total_pages`/`total_count`/`page_limit`. `limit` defaults to and is capped at 100 server-side.
+
+`hatchbox_delete_firewall_rule` fails with a 422 if the rule is one Hatchbox manages itself (SSH, and 80/443 on web servers) — check the `removable` field from `hatchbox_list_firewall_rules`/`hatchbox_get_firewall_rule` before attempting to delete a rule.
 
 ## Setup
 

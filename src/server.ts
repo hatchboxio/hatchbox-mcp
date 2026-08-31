@@ -12,11 +12,12 @@ import { registerClustersTools } from "./tools/clusters.js";
 import { registerServersTools } from "./tools/servers.js";
 import { registerBackupsTools } from "./tools/backups.js";
 import { registerLogsTools } from "./tools/logs.js";
+import { registerFirewallRulesTools } from "./tools/firewallRules.js";
 
 export function createServer(client: HatchboxClient): McpServer {
   const server = new McpServer({
     name: "hatchbox-mcp",
-    version: "0.5.0",
+    version: "0.6.0",
   });
 
   registerAccountsTools(server, client);
@@ -31,6 +32,7 @@ export function createServer(client: HatchboxClient): McpServer {
   registerServersTools(server, client);
   registerBackupsTools(server, client);
   registerLogsTools(server, client);
+  registerFirewallRulesTools(server, client);
 
   return server;
 }
