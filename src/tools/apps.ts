@@ -10,7 +10,6 @@ const appIdSchema = {
 const APP_NAME_REGEX = /^[\w-]+$/;
 
 const appWriteFields = {
-  name: z.string().regex(APP_NAME_REGEX).describe("App name, letters/numbers/underscore/hyphen only.").optional(),
   branch: z.string().describe("Git branch to deploy from.").optional(),
   repo_path: z.string().describe("Repository path, e.g. 'org/repo'.").optional(),
   connected_account_id: z
@@ -66,8 +65,8 @@ export function registerAppsTools(server: McpServer, client: HatchboxClient) {
     },
     async (args) =>
       runAction(async () => {
-        const { cluster_id } = args;
-        return jsonResult(await client.post(`/apps`, { app: { cluster_id, ...appParams(args) } }));
+        const { cluster_id, name } = args;
+        return jsonResult(await client.post(`/apps`, { app: { cluster_id, name, ...appParams(args) } }));
       }),
   );
 
@@ -75,7 +74,10 @@ export function registerAppsTools(server: McpServer, client: HatchboxClient) {
     "hatchbox_update_app",
     {
       title: "Update Hatchbox App",
-      description: "Update a Hatchbox app's configuration. Only the fields you pass are changed.",
+      description:
+        "Update a Hatchbox app's configuration. Only the fields you pass are changed. Renaming isn't supported here " +
+        "(a rename moves the app directory and rewrites server config, so it's a separate async operation) — use " +
+        "hatchbox_rename_app instead.",
       inputSchema: { ...appIdSchema, ...appWriteFields },
       annotations: WRITE,
     },
@@ -84,6 +86,53 @@ export function registerAppsTools(server: McpServer, client: HatchboxClient) {
         const { app_id } = args;
         return jsonResult(await client.patch(`/apps/${app_id}`, { app: appParams(args) }));
       }),
+  );
+
+  server.registerTool(
+    "hatchbox_rename_app",
+    {
+      title: "Rename Hatchbox App",
+      description:
+        "Rename a Hatchbox app. Moves the app directory and rewrites every systemd unit on its servers, so it runs " +
+        "as a background script rather than a plain field update — the app keeps its old name until the script " +
+        "completes. Asynchronous — returns an id (the log id, not named log_id for this endpoint), follow up with " +
+        "hatchbox_get_log. Fails with a 422 if the new name matches the current name, is blank, contains characters " +
+        "other than letters/numbers/hyphens/underscores, or is already taken by another app in the same cluster.",
+      inputSchema: {
+        ...appIdSchema,
+        name: z.string().regex(APP_NAME_REGEX).describe("New app name, letters/numbers/underscore/hyphen only."),
+      },
+      annotations: WRITE,
+    },
+    async ({ app_id, name }) => runAction(async () => jsonResult(await client.post(`/apps/${app_id}/rename`, { app: { name } }))),
+  );
+
+  server.registerTool(
+    "hatchbox_enable_app_maintenance",
+    {
+      title: "Enable App Maintenance Mode",
+      description:
+        "Put a Hatchbox app into maintenance mode, serving a maintenance page instead of the app. Returns the " +
+        "updated app record immediately with `maintenance: true` — the actual Caddy config reload on the app's " +
+        "servers happens in the background, with no log id to follow up on.",
+      inputSchema: appIdSchema,
+      annotations: WRITE,
+    },
+    async ({ app_id }) => runAction(async () => jsonResult(await client.post(`/apps/${app_id}/maintenance`))),
+  );
+
+  server.registerTool(
+    "hatchbox_disable_app_maintenance",
+    {
+      title: "Disable App Maintenance Mode",
+      description:
+        "Take a Hatchbox app out of maintenance mode. Returns the updated app record immediately with " +
+        "`maintenance: false` — the actual Caddy config reload on the app's servers happens in the background, " +
+        "with no log id to follow up on.",
+      inputSchema: appIdSchema,
+      annotations: WRITE,
+    },
+    async ({ app_id }) => runAction(async () => jsonResult(await client.delete(`/apps/${app_id}/maintenance`))),
   );
 
   server.registerTool(

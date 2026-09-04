@@ -10,7 +10,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 |---|---|---|
 | Accounts | `hatchbox_list_accounts`, `hatchbox_get_account`, `hatchbox_list_account_apps`, `hatchbox_list_account_clusters`, `hatchbox_list_account_database_clusters`, `hatchbox_list_account_git_providers` | — |
 | User | `hatchbox_get_me` | — |
-| Apps | `hatchbox_get_app` | `hatchbox_create_app`, `hatchbox_update_app`, `hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_enable_app_auto_deploy`, `hatchbox_disable_app_auto_deploy` |
+| Apps | `hatchbox_get_app` | `hatchbox_create_app`, `hatchbox_update_app`, `hatchbox_rename_app`, `hatchbox_enable_app_maintenance`, `hatchbox_disable_app_maintenance`, `hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_enable_app_auto_deploy`, `hatchbox_disable_app_auto_deploy` |
 | Domains | `hatchbox_list_domains`, `hatchbox_get_domain` | `hatchbox_create_domain`, `hatchbox_update_domain`, `hatchbox_delete_domain` |
 | Env vars | — | `hatchbox_create_env_vars`, `hatchbox_update_env_vars`, `hatchbox_delete_env_vars` |
 | Processes | `hatchbox_list_processes`, `hatchbox_get_process` | `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, `hatchbox_disable_process`, `hatchbox_restart_process` |
@@ -22,11 +22,15 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Backups | `hatchbox_get_latest_backup`, `hatchbox_get_backup_configuration` | `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups` |
 | Logs | `hatchbox_list_app_logs`, `hatchbox_get_log` | — |
 
-`hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, `hatchbox_reboot_server`, `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, `hatchbox_disable_process`, `hatchbox_create_firewall_rule`, and `hatchbox_delete_firewall_rule` are asynchronous: they return a log id (as `log_id`, except `hatchbox_delete_process` and `hatchbox_delete_firewall_rule`, which return it as `id`) you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`. `hatchbox_enable_process`/`hatchbox_disable_process` return no log id when the process was already in that state (a no-op).
+`hatchbox_restart_app`, `hatchbox_deploy_app`, `hatchbox_rename_app`, `hatchbox_create_backup`, `hatchbox_test_backup_connection`, `hatchbox_update_backup_configuration`, `hatchbox_disable_backups`, `hatchbox_provision_server`, `hatchbox_reboot_server`, `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, `hatchbox_disable_process`, `hatchbox_create_firewall_rule`, and `hatchbox_delete_firewall_rule` are asynchronous: they return a log id (as `log_id`, except `hatchbox_delete_process`, `hatchbox_delete_firewall_rule`, and `hatchbox_rename_app`, which return it as `id`) you follow up on with `hatchbox_get_log` until `state` is `completed`/`failed`/`aborted`. `hatchbox_enable_process`/`hatchbox_disable_process` return no log id when the process was already in that state (a no-op).
+
+`hatchbox_enable_app_maintenance`/`hatchbox_disable_app_maintenance` are *not* async in this sense: they return the updated app record immediately (`maintenance: true`/`false`). The Caddy config reload that actually flips the served page happens on the app's servers in the background, with no log id to poll.
 
 `hatchbox_list_app_logs` and `hatchbox_list_firewall_rules` are paginated: they return `{ logs, pagination }` / `{ firewall_rules, pagination }` respectively, where `pagination` carries `current_page`/`total_pages`/`total_count`/`page_limit`. `limit` defaults to and is capped at 100 server-side.
 
 `hatchbox_delete_firewall_rule` fails with a 422 if the rule is one Hatchbox manages itself (SSH, and 80/443 on web servers) — check the `removable` field from `hatchbox_list_firewall_rules`/`hatchbox_get_firewall_rule` before attempting to delete a rule.
+
+`hatchbox_update_app` rejects the `name` field entirely (422) — renaming moves the app's directory and rewrites server config, so it's handled separately by `hatchbox_rename_app`, which also 422s if the new name is unchanged, blank, contains characters other than letters/numbers/hyphens/underscores, or is already taken by another app in the same cluster.
 
 ## Setup
 

@@ -17,7 +17,7 @@ import { registerFirewallRulesTools } from "./tools/firewallRules.js";
 export function createServer(client: HatchboxClient): McpServer {
   const server = new McpServer({
     name: "hatchbox-mcp",
-    version: "0.6.0",
+    version: "0.7.0",
   });
 
   registerAccountsTools(server, client);
