@@ -58,6 +58,24 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
    }
    ```
 
+## Plugin (Claude Code)
+
+Claude Code users can install the MCP server and the Heroku migration skill together:
+
+```
+/plugin marketplace add hatchboxio/hatchbox-mcp
+/plugin install hatchbox@hatchbox
+```
+
+Set `HATCHBOX_API_TOKEN` in your environment first — the plugin passes it through to the server.
+
+The bundled `migrate-from-heroku` skill takes a Rails app from Heroku to Hatchbox. It currently
+covers preflight, inventory and planning; all of it is read-only and writes nothing to Hatchbox
+or Heroku.
+
+Users of other MCP clients configure the server directly per the Setup section above; the skill
+is Claude Code specific.
+
 ## Development
 
 To work on `hatchbox-mcp` itself rather than just using it:
