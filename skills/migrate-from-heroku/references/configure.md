@@ -64,6 +64,20 @@ becomes `*/10 * * * *`, "hourly" becomes `0 * * * *`, "daily at 04:00 UTC" becom
 
 This fails with a 422 if no server in the cluster carries the `cron` role. Phase 3 checked that.
 
+## Auto-deploy is ON by default — decide about it here
+
+`hatchbox_create_app` returns `auto_deploy: true`. That is a hazard for the phases that follow:
+Phase 5 makes repo changes, and a push or merge to the app's branch will trigger a deploy before
+the data is restored and possibly before the env vars are complete.
+
+**Before disabling it, know the trap.** `hatchbox_disable_app_auto_deploy` is ungated, but
+`auto_deploys#create` — re-enabling — sits behind `require_payment_method!`. On a trial without a
+card you can turn it off and then be unable to turn it back on. So either leave it on and take
+care not to push to the app's branch until Phase 6, or confirm a card is on file first.
+
+Say which one you chose in `MIGRATION.md`. Silently disabling a feature the user cannot restore
+is worse than the hazard it avoids.
+
 ## What is NOT done here
 
 - **Processes.** See `references/processes.md` — creating one before the first deploy suppresses
