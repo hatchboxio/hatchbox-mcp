@@ -14,6 +14,7 @@ const ARGS = [
   "--ssh-host", "203.0.113.10",
   "--ssh-user", "deploy",
   "--database", "demo_production",
+  "--db-uri", "postgresql://u:sekrit@10.0.0.1:5432/demo_production",
   "--dump-url", "https://example.invalid/dump.pgsql",
 ];
 
@@ -48,6 +49,18 @@ describe("pg_transfer.sh", () => {
   it("never executes anything itself", () => {
     const out = run(ARGS);
     expect(out).toContain("Nothing above has been run");
+  });
+
+  it("connects with the database URI, not a bare local dbname", () => {
+    const out = run(ARGS);
+    expect(out).toMatch(/pg_restore[^\n]*--dbname="\$HB_DB_URI"/);
+    expect(out, "psql must use the URI too — deploy has no local role").not.toMatch(/psql -d demo_production/);
+  });
+
+  it("never prints the password, in any command or instruction", () => {
+    const out = run(ARGS);
+    expect(out).not.toContain("sekrit");
+    expect(out).toContain("HB_DB_URI");
   });
 
   it("exits 64 when a required argument is missing", () => {
