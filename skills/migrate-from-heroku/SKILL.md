@@ -74,6 +74,8 @@ genuinely could not fill something in, **write why in the file** — never leave
       as a blocker
 - [ ] every judgment-call var present in `config` → carries a non-empty Note saying what was
       decided and why
+- [ ] every var whose **value** looks like a filesystem path is labelled re-point, not keep —
+      `/app` does not exist on the new host, and a carried-over path fails silently
 - [ ] `domains` contains a `kind: "custom"` entry → that hostname appears in the Cutover section
 - [ ] `local.gems.rack_timeout` was checked before labelling `RACK_TIMEOUT_SERVICE_TIMEOUT`
 - [ ] the `heroku run env` delta against `config` was either run, or its omission stated — and it

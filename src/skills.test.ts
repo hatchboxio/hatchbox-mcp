@@ -40,7 +40,7 @@ describe("skill tool references", () => {
     expect(gate, "SKILL.md has lost its Phase 2 completeness gate").toBeDefined();
 
     const invariants = (gate.split("Stop here")[0].match(/^- \[ \] /gm) ?? []).length;
-    expect(invariants, "the completeness gate should list every silent-emptiness trap").toBeGreaterThanOrEqual(7);
+    expect(invariants, "the completeness gate should list every silent-emptiness trap").toBeGreaterThanOrEqual(8);
   });
 
   it("keeps the Phase 6 reconciliation gate intact", () => {

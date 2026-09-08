@@ -46,6 +46,31 @@ MIGRATION.md** saying what happened to it and why.
 If a config var looks like platform tuning but is not in this table, treat it as a judgment call
 too: label it, and write the Note.
 
+## Any value that looks like a filesystem path is re-point, never keep
+
+**Check every value for a path shape before labelling it `keep`.** A Heroku app lives at `/app`.
+A Hatchbox app lives at `/home/deploy/<app>/current`, with persistent data under
+`/home/deploy/<app>/shared`. A path carried across verbatim points at a directory that does not
+exist on the new host — or, worse, one that does and is wrong.
+
+Observed on a real migration: `EXPORT_ARCHIVE_ROOT=/app/tmp/exports` was carried over as `keep`.
+The pruning script ran against it, reported "4 entries, 1 eligible for pruning", exited zero, and
+the deploy went green — while operating on nothing the app owns. Nothing failed. Nothing logged a
+warning. It is only visible if you read the value and notice `/app`.
+
+Flag a value as a path if it starts with `/`, or contains `/app/`, `tmp/`, `log/`, `public/` or
+`shared/`. For each one decide **where the equivalent lives on the new host**, not whether the
+string still parses:
+
+| Heroku | Hatchbox | Note |
+|---|---|---|
+| `/app/...` | `/home/deploy/<app>/current/...` | Wiped and recreated on every deploy |
+| anything that must survive a deploy | `/home/deploy/<app>/shared/...` | Symlinked into each release |
+| `/tmp/...` | `/tmp/...` | Same, but now persists across restarts — Heroku's was ephemeral |
+
+The last row is its own trap in reverse. On Heroku a dyno restart emptied the disk, so code that
+leaked files was self-cleaning. On a persistent server the same code fills the disk instead.
+
 ## keep — carry across verbatim
 
 Everything else: `SECRET_KEY_BASE`, `RAILS_ENV`, `RAILS_MASTER_KEY`, app-specific settings,
