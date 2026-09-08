@@ -32,6 +32,7 @@ read_if_present() { if [ -f "$1" ]; then cat "$1"; fi; }
 
 procfile=$(read_if_present Procfile)
 app_json=$(read_if_present app.json)
+profile=$(read_if_present .profile)
 puma_config=$(read_if_present config/puma.rb)
 database_yml=$(read_if_present config/database.yml)
 bin_scripts=$(ls bin 2>/dev/null | tr '\n' ' ')
@@ -56,6 +57,7 @@ jq -n \
   --arg pg_info "$pg_info" \
   --arg procfile "$procfile" \
   --arg app_json "$app_json" \
+  --arg profile "$profile" \
   --arg puma_config "$puma_config" \
   --arg database_yml "$database_yml" \
   --arg bin_scripts "$bin_scripts" \
@@ -76,6 +78,7 @@ jq -n \
     local: {
       procfile: $procfile,
       app_json: $app_json,
+      profile: $profile,
       puma_config: $puma_config,
       database_yml: $database_yml,
       bin_scripts: $bin_scripts,

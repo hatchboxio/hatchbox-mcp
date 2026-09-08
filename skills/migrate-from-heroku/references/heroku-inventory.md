@@ -41,9 +41,19 @@ billing job looks completely successful until the end of the month.
 verbatim into the Hatchbox cron job rather than assuming a `rails <task>` shape and rewriting it.
 
 **Runtime-only env vars.** `heroku config -j` reports vars that were *set* on the app. It does not
-report what a buildpack's `.profile.d/*.sh` script exports at dyno boot, so a var the app reads at
-runtime can be absent from the inventory and get silently dropped — the same shape of loss as the
-Scheduler list above.
+report anything exported at dyno boot, and there are two such mechanisms:
+
+- **`.profile` in the app root** — written by the app's authors. It *is* in the repo, so the
+  script captures it as `local.profile`. Read it: every `export` there is a var that will not
+  appear in `config`.
+- **`.profile.d/*.sh`** — injected into the slug by buildpacks. Not in the repo, not in `config`,
+  and only visible from a running dyno.
+
+Weight this higher than its rarity suggests. A missing credential crashes and gets found; a
+missing *path* or *root directory* does not. An app whose export root silently falls back to a
+default boots, serves traffic, passes a homepage check, and quietly operates on the wrong
+directory. Silent wrong behaviour outlives loud failure, so flag delta vars that look
+load-bearing rather than merely informational.
 
 Once the app is deployed and running, `heroku run env` prints the actual runtime environment.
 Diff it against `config` and classify anything in the delta that isn't Heroku's own (`PORT`,
