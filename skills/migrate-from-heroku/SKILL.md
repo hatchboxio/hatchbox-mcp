@@ -92,3 +92,18 @@ the roles match what the app needs before continuing.
 Read `references/configure.md`. Order is load-bearing: create app → create and attach databases
 (reading injected env var names off the responses) → create env vars → set `post_deploy_script`
 → cron jobs. **Do not create processes here.** Domains wait for Phase 7.
+
+## Phase 5 — Repo branch
+
+Read `references/rails-changes.md`. Branch `hatchbox-migration`, make the edits, run the app's
+own test suite, present the diff. Push nothing without approval; a failing suite stops the phase.
+
+## Phase 6 — Deploy and rehearse
+
+**This runs days before cutover. It is what makes the real cutover boring.**
+
+1. `hatchbox_deploy_app`, then poll `hatchbox_get_log` to a terminal state. On failure read the
+   log body and diagnose against `references/troubleshooting.md` — never report a bare failure.
+2. Reconcile processes — `references/processes.md`.
+3. Rehearse the data transfer — `references/database-transfer.md`.
+4. Smoke test against the Hatchbox hostname, exercising credential paths.
