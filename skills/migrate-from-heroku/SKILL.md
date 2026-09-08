@@ -106,7 +106,10 @@ own test suite, present the diff. Push nothing without approval; a failing suite
    log body and diagnose against `references/troubleshooting.md` — never report a bare failure.
 2. Reconcile processes — `references/processes.md`.
 3. Rehearse the data transfer — `references/database-transfer.md`.
-4. Smoke test against the Hatchbox hostname, exercising credential paths.
+4. **Re-run the release phase after the restore.** This phase deploys before it restores, so the
+   restore reverts anything `post_deploy_script` wrote to the source platform's values. Redeploy
+   before smoke testing. (Phase 7 restores before deploying and does not need this.)
+5. Smoke test against the Hatchbox hostname, exercising credential paths.
 
 ### Reconciliation gate — run before leaving Phase 6
 

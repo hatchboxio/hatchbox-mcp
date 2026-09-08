@@ -19,6 +19,25 @@ success, and every query touching a `citext` column fails later.
 Step 3 of the script lists the installed extensions **before** the restore for exactly this
 reason. Compare it against the dump's requirements and create anything missing first.
 
+## A restore overwrites whatever the release phase wrote
+
+Ordering that looks harmless and is not. If you deploy first and restore second, the restore
+replaces every table the dump covers — **including anything `post_deploy_script` wrote**. A
+release marker, a migration audit row, a deploy timestamp: all reverted to the source platform's
+values, and the app then reports that its last release came from Heroku.
+
+Observed on a real rehearsal: `post_deploy_script` ran during the deploy and recorded a Hatchbox
+release, the restore landed afterwards, and the app's release marker read `heroku` again.
+
+Two consequences:
+
+- **Phase 6 rehearsal:** the phase deploys before it restores, so the marker is stale by the end.
+  **Re-run the release phase after the restore** — redeploy, or run the script by hand — before
+  smoke testing, or the release-phase check reports the old platform and looks like a mapping
+  failure that isn't one.
+- **Phase 7 cutover:** the runbook restores *before* deploying, which is the correct order and
+  avoids this entirely. Do not "optimise" by deploying early to save window time.
+
 ## Do not re-seed after restoring
 
 If the app seeds data conditionally — "create these rows if the table is empty" — a restore
