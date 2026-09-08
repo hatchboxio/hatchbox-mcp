@@ -40,8 +40,8 @@ MIGRATION.md** saying what happened to it and why.
 | `WEB_CONCURRENCY` | re-point | Do not copy the value. It was sized for a dyno's memory; re-derive it from the Hatchbox server's RAM and say what you set and why |
 | `RAILS_MAX_THREADS` | keep | Carry the value, but check it against the database pool size — this is the input to pool sizing, and a mismatch shows up as connection timeouts under load, not at boot |
 | `RACK_TIMEOUT_SERVICE_TIMEOUT` | keep **if** `rack-timeout` is in `Gemfile.lock`, else drop | The variable is inert without the gem. Check `local.gems` rather than assuming |
-| `LANG` | drop | Heroku sets it for the slug runtime; the server sets locale at the OS level |
-| `MALLOC_ARENA_MAX` | keep | A glibc tuning knob, not a Heroku one — it applies the same on Ubuntu |
+| `LANG` | drop **if** the server's locale is UTF-8, else keep | Ruby derives `Encoding.default_external` from the locale. On a server whose locale is `C`/`POSIX` that becomes US-ASCII, and UTF-8 data raises at read time — long after boot, so it looks like a data bug rather than a migration one. Run `locale` on the server before dropping it |
+| `MALLOC_ARENA_MAX` | keep | A glibc knob rather than a Heroku one, so it still applies — but the usual value of `2` was picked to cap RSS on a small dyno. Re-check it against the new server's core count instead of copying it blindly |
 
 If a config var looks like platform tuning but is not in this table, treat it as a judgment call
 too: label it, and write the Note.
