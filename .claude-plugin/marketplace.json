@@ -1,0 +1,15 @@
+{
+  "name": "hatchbox",
+  "owner": {
+    "name": "Hatchbox",
+    "url": "https://hatchbox.io"
+  },
+  "description": "Official Hatchbox tooling for Claude Code: the Hatchbox MCP server and the Heroku migration skill.",
+  "plugins": [
+    {
+      "name": "hatchbox",
+      "source": "./",
+      "description": "Hatchbox MCP server plus the Heroku migration skill."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "hatchbox",
+  "description": "Manage Hatchbox apps, servers, databases and deploys from Claude Code, and migrate a Rails app from Heroku to Hatchbox.",
+  "version": "0.7.0",
+  "author": {
+    "name": "Hatchbox",
+    "url": "https://hatchbox.io"
+  },
+  "homepage": "https://hatchbox.io/mcp",
+  "repository": "https://github.com/hatchboxio/hatchbox-mcp",
+  "license": "MIT",
+  "keywords": ["hatchbox", "deployment", "rails", "heroku", "devops"],
+  "mcpServers": {
+    "hatchbox": {
+      "command": "npx",
+      "args": ["-y", "@hatchbox/hatchbox-mcp"],
+      "env": {
+        "HATCHBOX_API_TOKEN": "${HATCHBOX_API_TOKEN}"
+      }
+    }
+  }
+}
