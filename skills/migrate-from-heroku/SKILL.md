@@ -81,7 +81,8 @@ genuinely could not fill something in, **write why in the file** — never leave
 
 Stop here and have the user approve the file. Nothing is written to Hatchbox until they do.
 
-## Phases 3-7
+## Phase 3 — Provisioning (the handoff)
 
-Not yet implemented. Tell the user the skill currently covers assessment only, and that the
-configure and cutover phases are coming.
+Read `references/provisioning.md`. Print the filled-in checklist, then poll
+`hatchbox_list_account_clusters` and `hatchbox_list_servers` until the server is ready. Verify
+the roles match what the app needs before continuing.
