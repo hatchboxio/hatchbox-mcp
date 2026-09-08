@@ -40,6 +40,16 @@ billing job looks completely successful until the end of the month.
 `ruby bin/prune-exports` and `bin/do-thing --flag` are all valid entries. Carry the command
 verbatim into the Hatchbox cron job rather than assuming a `rails <task>` shape and rewriting it.
 
+**Runtime-only env vars.** `heroku config -j` reports vars that were *set* on the app. It does not
+report what a buildpack's `.profile.d/*.sh` script exports at dyno boot, so a var the app reads at
+runtime can be absent from the inventory and get silently dropped — the same shape of loss as the
+Scheduler list above.
+
+Once the app is deployed and running, `heroku run env` prints the actual runtime environment.
+Diff it against `config` and classify anything in the delta that isn't Heroku's own (`PORT`,
+`DYNO`, `HEROKU_*`). This needs a running app and spends a one-off dyno, which is why the script
+does not do it — but skipping it is a decision, so record in MIGRATION.md whether you ran it.
+
 Note also that Scheduler runs each job on its own one-off dyno, whereas a Hatchbox cron job runs
 on the server alongside everything else. A job that assumed a whole dyno's memory is worth
 flagging.
