@@ -24,6 +24,26 @@ from that file — do not re-run `heroku` commands ad hoc, because the script is
 | `local.ruby_version` | `Gemfile.lock` | Must be an available Ruby on Hatchbox |
 | `local.gems` | `Gemfile.lock` | `rails_12factor` gets removed; `puma`/`sidekiq`/`solid_queue` predict auto-detection |
 
+## What the script cannot collect
+
+**Heroku Scheduler jobs.** They live in the Scheduler add-on's own dashboard — not in
+`heroku addons --json`, which reports only that the add-on is attached, and not in the platform
+API. `heroku addons:open scheduler` opens it. (Check `heroku scheduler --help` first in case the
+installed plugin version offers a listing; do not assume one exists.)
+
+This is a **manual step and must be named as one**: ask the user to paste the job list — command,
+frequency, and dyno size for each — and record it. Producing an empty "Scheduled jobs" table in
+MIGRATION.md because nothing was collected is a silent data loss; a migration that drops a nightly
+billing job looks completely successful until the end of the month.
+
+**Scheduler commands are arbitrary shell, not necessarily rake tasks.** `rails db:sweep`,
+`ruby bin/prune-exports` and `bin/do-thing --flag` are all valid entries. Carry the command
+verbatim into the Hatchbox cron job rather than assuming a `rails <task>` shape and rewriting it.
+
+Note also that Scheduler runs each job on its own one-off dyno, whereas a Hatchbox cron job runs
+on the server alongside everything else. A job that assumed a whole dyno's memory is worth
+flagging.
+
 ## Sizing heuristic
 
 Sum the formation: a `standard-1x` dyno is 512 MB, `standard-2x` 1 GB, `performance-m` 2.5 GB,

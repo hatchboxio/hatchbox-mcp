@@ -50,8 +50,11 @@ what you decided and why. A judgment var with a blank Note means the decision wa
 
 ## Scheduled jobs
 
-| Heroku Scheduler | Frequency | Hatchbox cron |
+| Command | Frequency | Hatchbox cron job |
 |---|---|---|
+
+<Collected from the Scheduler dashboard, not from the CLI — see `references/heroku-inventory.md`.
+If you could not get the list, say so here explicitly rather than leaving the table empty.>
 
 ## Release phase
 
