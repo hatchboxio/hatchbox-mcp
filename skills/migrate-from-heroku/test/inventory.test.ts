@@ -50,6 +50,7 @@ describe("heroku_inventory.sh", () => {
     expect(inventory.local.bin_scripts).toContain("rails");
     expect(inventory.local.app_json).toBe("");
     expect(inventory.local.profile).toContain("EXPORT_ARCHIVE_ROOT");
+    expect(inventory.local.package_json).toContain("heroku-postbuild");
     expect(inventory.local.ruby_version).toBe("3.3.4");
     expect(inventory.local.gems).toEqual({ puma: true, sidekiq: true, solid_queue: false, rails_12factor: false });
   });

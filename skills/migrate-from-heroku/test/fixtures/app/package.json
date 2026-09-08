@@ -1,0 +1,8 @@
+{
+  "name": "testbed",
+  "private": true,
+  "scripts": {
+    "build": "esbuild app/javascript/*.js --bundle --outdir=app/assets/builds",
+    "heroku-postbuild": "./bin/stamp-runtime-env"
+  }
+}
