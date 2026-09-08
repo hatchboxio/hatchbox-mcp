@@ -107,3 +107,12 @@ own test suite, present the diff. Push nothing without approval; a failing suite
 2. Reconcile processes — `references/processes.md`.
 3. Rehearse the data transfer — `references/database-transfer.md`.
 4. Smoke test against the Hatchbox hostname, exercising credential paths.
+
+### Reconciliation gate — run before leaving Phase 6
+
+- [ ] every Procfile entry is accounted for as dropped, updated, created, or already correct
+- [ ] the `web:` entry was dropped, not translated
+- [ ] every entry with no detected counterpart was **created** — state the count, and state zero
+      explicitly if it is zero
+- [ ] every process write was polled to a terminal state
+- [ ] the env var ledger's confirmed names match the intended set from `MIGRATION.md`

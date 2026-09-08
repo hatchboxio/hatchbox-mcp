@@ -43,6 +43,17 @@ describe("skill tool references", () => {
     expect(invariants, "the completeness gate should list every silent-emptiness trap").toBeGreaterThanOrEqual(7);
   });
 
+  it("keeps the Phase 6 reconciliation gate intact", () => {
+    const skill = readFileSync(join(SKILLS_DIR, "migrate-from-heroku/SKILL.md"), "utf8");
+    const gate = skill.split("### Reconciliation gate")[1];
+    expect(gate, "SKILL.md has lost its reconciliation gate").toBeDefined();
+
+    const invariants = (gate.split("## Phase 7")[0].match(/^- \[ \] /gm) ?? []).length;
+    expect(invariants, "the reconciliation gate should list every process outcome").toBeGreaterThanOrEqual(5);
+
+    expect(gate, "the create pass is the one that gets skipped; the gate must name it").toMatch(/created/);
+  });
+
   it("names only tools the server registers", () => {
     for (const file of markdownFiles(SKILLS_DIR)) {
       const referenced = new Set(readFileSync(file, "utf8").match(/hatchbox_[a-z_]+/g) ?? []);
