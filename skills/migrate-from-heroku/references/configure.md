@@ -6,7 +6,13 @@ suppressed, and env var names can only be learned from a create response.
 ## 1. Create the app
 
 `hatchbox_create_app` with `cluster_id`, `name`, `repo_path`, `branch`, and
-`connected_account_id` from `hatchbox_list_account_git_providers`. Also set `health_check_uri`
+`connected_account_id` from `hatchbox_list_account_git_providers`.
+
+**This call validates the repository, and a 422 here means the connected Git provider cannot see
+it** — see `references/troubleshooting.md`. It is a common first failure for a migration, because
+the repo is often private and newer than the Hatchbox GitHub App installation. Nothing is created
+when it fails, so the fix is granting access and calling again; there is no partial state to
+clean up. Also set `health_check_uri`
 if the app has a health endpoint — Hatchbox polls it to decide whether a deploy succeeded, and
 without it a booting-but-broken app reports a successful deploy.
 

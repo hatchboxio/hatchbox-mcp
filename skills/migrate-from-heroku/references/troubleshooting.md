@@ -40,6 +40,25 @@ Distinguishable only by message, and they mean different things:
 
 Say which one it is and what unblocks it. "402" alone sends the user to the wrong place.
 
+## A 422 on app creation: "Could not validate <repo> on github_app"
+
+The connected Git provider cannot see that repository. The repo path is usually fine — check it
+against `git remote -v` before assuming a typo. The real cause is nearly always **access**:
+
+- A **GitHub App grants access per repository.** If the repo was created after the Hatchbox app
+  was installed, and the installation is scoped to "only select repositories", the new repo is
+  not in the grant. This is the common case for a migration, because people often create the
+  repo and connect Hatchbox on the same day.
+- The repo is **private** and the connected account is not the owner.
+- The repo belongs to an **organisation** whose installation is separate from the personal one.
+
+Fix: at github.com/settings/installations, open the Hatchbox app and add the repository (or
+switch it to all repositories). No Hatchbox-side change is needed and nothing must be recreated —
+`hatchbox_create_app` simply succeeds on the next attempt.
+
+Confirm the repo really exists and is spelled as Hatchbox expects before sending the user to
+GitHub: `gh repo view <path> --json nameWithOwner,isPrivate`.
+
 ## A 422 on cron job creation
 
 No server in the cluster carries the `cron` role. Phase 3 was supposed to catch this.
