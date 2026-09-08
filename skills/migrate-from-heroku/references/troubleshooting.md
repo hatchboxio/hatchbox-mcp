@@ -6,8 +6,14 @@
 and `hatchbox_reboot_server` are asynchronous. They return a **log id**. The call returning is
 not the operation succeeding.
 
-Poll `hatchbox_get_log` with that `log_id` until the status is terminal — `completed`, `failed`
-or `aborted`. Poll every 5 seconds for the first minute, then every 15.
+Poll `hatchbox_get_log` with that `log_id` until it reaches a terminal value. **The field is
+`state`, not `status`** — there is no `status` key on a log, so code that reads one polls forever
+against `None` and times out looking like a hung deploy. Terminal values are `completed`,
+`failed` and `aborted`. Poll every 5 seconds for the first minute, then every 15.
+
+A deploy log is also **shallow**: the parent record carries a short summary body, and the real
+output is in `child_logs`. Fetch the child by its id when diagnosing a failure — the parent will
+tell you a deploy failed without telling you why.
 
 `hatchbox_enable_process` and `hatchbox_disable_process` return **no log id on a no-op** (the
 process was already in that state). Absence of a log id there is success, not an error.
