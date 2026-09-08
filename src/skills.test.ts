@@ -34,6 +34,15 @@ describe("skill tool references", () => {
     expect(markdownFiles(SKILLS_DIR).length).toBeGreaterThan(0);
   });
 
+  it("keeps a Phase 2 completeness gate with its invariants intact", () => {
+    const skill = readFileSync(join(SKILLS_DIR, "migrate-from-heroku/SKILL.md"), "utf8");
+    const gate = skill.split("### Completeness gate")[1];
+    expect(gate, "SKILL.md has lost its Phase 2 completeness gate").toBeDefined();
+
+    const invariants = (gate.split("Stop here")[0].match(/^- \[ \] /gm) ?? []).length;
+    expect(invariants, "the completeness gate should list every silent-emptiness trap").toBeGreaterThanOrEqual(6);
+  });
+
   it("names only tools the server registers", () => {
     for (const file of markdownFiles(SKILLS_DIR)) {
       const referenced = new Set(readFileSync(file, "utf8").match(/hatchbox_[a-z_]+/g) ?? []);

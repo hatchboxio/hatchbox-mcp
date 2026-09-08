@@ -59,6 +59,24 @@ Read `references/addons.md` and `references/env-vars.md`, then write `MIGRATION.
 
 **Names and classifications only — never secret values in `MIGRATION.md`.**
 
+### Completeness gate — run before showing the file
+
+Silent emptiness is this phase's failure mode. A table left empty because nothing was *collected*
+reads identically to one empty because there was nothing to collect, and the migration then looks
+clean right up until the thing you dropped was needed. Check each invariant below. Where you
+genuinely could not fill something in, **write why in the file** — never leave it blank.
+
+- [ ] `scheduler` appears in `addons` → the Scheduled jobs table has rows, or states that the job
+      list was not collected from the dashboard and why
+- [ ] `local.procfile` contains a `release:` line → the Release phase section quotes that command
+      rather than saying "None"
+- [ ] `addons` is non-empty → every entry has a row in the Add-ons table, including any bucketed
+      as a blocker
+- [ ] every judgment-call var present in `config` → carries a non-empty Note saying what was
+      decided and why
+- [ ] `domains` contains a `kind: "custom"` entry → that hostname appears in the Cutover section
+- [ ] `local.gems.rack_timeout` was checked before labelling `RACK_TIMEOUT_SERVICE_TIMEOUT`
+
 Stop here and have the user approve the file. Nothing is written to Hatchbox until they do.
 
 ## Phases 3-7
