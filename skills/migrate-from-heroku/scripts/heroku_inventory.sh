@@ -14,16 +14,32 @@ command -v jq >/dev/null     || { echo "jq not found (brew install jq)" >&2; exi
 out="${HATCHBOX_INVENTORY_OUT:-.hatchbox/inventory.json}"
 mkdir -p "$(dirname "$out")"
 
-# JSON-emitting commands fall back to null so one missing add-on can't abort the run.
-json() { heroku "$@" 2>/dev/null || echo 'null'; }
-text() { heroku "$@" 2>/dev/null || true; }
+# A failed command falls back to null so one missing add-on can't abort the run — but the
+# fallback is RECORDED. A silent null is indistinguishable from "there was nothing there",
+# which is the same failure the Phase 2 completeness gate exists to prevent.
+warnings=""
+json() { # json <label> <heroku args...>
+  local label="$1"; shift
+  local out
+  if out=$(heroku "$@" 2>/dev/null) && [ -n "$out" ]; then
+    printf '%s' "$out"
+  else
+    warnings="${warnings}${label} "
+    echo "warning: 'heroku $*' failed; ${label} is null" >&2
+    echo 'null'
+  fi
+}
+# Strip ANSI colour codes — the CLI emits them even when piped, and they are noise to
+# whatever reads buildpacks/pg_info downstream.
+text() { heroku "$@" 2>/dev/null | sed $'s/\033\[[0-9;]*m//g' || true; }
 
-config=$(json config -j --app "$app")
-addons=$(json addons --json --app "$app")
-domains=$(json domains --json --app "$app")
-releases=$(json releases --json --num 1 --app "$app")
-formation=$(json api GET "/apps/$app/formation")
-app_info=$(json api GET "/apps/$app")
+config=$(json config config -j --app "$app")
+addons=$(json addons addons --json --app "$app")
+domains=$(json domains domains --json --app "$app")
+releases=$(json releases releases --json --num 1 --app "$app")
+# There is no `heroku api` subcommand. apps:info --json carries both the app record and
+# the running dynos, which is what the formation is derived from below.
+apps_info=$(json apps_info apps:info --json --app "$app")
 buildpacks=$(text buildpacks --app "$app")
 pg_info=$(text pg:info --app "$app")
 
@@ -58,8 +74,8 @@ jq -n \
   --argjson addons "$addons" \
   --argjson domains "$domains" \
   --argjson releases "$releases" \
-  --argjson formation "$formation" \
-  --argjson app "$app_info" \
+  --argjson apps_info "$apps_info" \
+  --arg warnings "$warnings" \
   --arg buildpacks "$buildpacks" \
   --arg pg_info "$pg_info" \
   --arg procfile "$procfile" \
@@ -76,12 +92,18 @@ jq -n \
   --argjson solid_queue "$(has_gem solid_queue)" \
   --argjson rails_12factor "$(has_gem rails_12factor)" \
   '{
-    app: $app,
+    app: ($apps_info.app // null),
+    formation: (
+      if $apps_info == null or $apps_info.dynos == null then null
+      else ($apps_info.dynos | group_by(.type)
+            | map({type: .[0].type, size: .[0].size, quantity: length}))
+      end
+    ),
+    uncollected: ($warnings | split(" ") | map(select(. != ""))),
     config: $config,
     addons: $addons,
     domains: $domains,
     releases: $releases,
-    formation: $formation,
     buildpacks: $buildpacks,
     pg_info: $pg_info,
     local: {

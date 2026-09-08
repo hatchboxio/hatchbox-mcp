@@ -37,6 +37,18 @@ describe("heroku_inventory.sh", () => {
     expect(inventory.addons.map((a: any) => a.addon_service.name)).toContain("heroku-redis");
     const web = inventory.formation.find((f: any) => f.type === "web");
     expect(web.quantity).toBe(2);
+    expect(web.size).toBe("standard-1x");
+  });
+
+  // The formation and app record were silently null on the first live run because the
+  // script called `heroku api`, which is not a CLI command, and the fixture implemented
+  // the invented command faithfully. Assert the fields are populated, and that anything
+  // that DID fall back is named rather than passing as an empty result.
+  it("populates every field it does not report as uncollected", () => {
+    expect(inventory.uncollected).toEqual([]);
+    expect(inventory.app).not.toBeNull();
+    expect(inventory.formation).not.toBeNull();
+    expect(inventory.formation.length).toBeGreaterThan(0);
   });
 
   it("keeps non-JSON heroku output as raw text", () => {

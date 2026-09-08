@@ -32,7 +32,8 @@ vendor's current docs before relying on it — add-ons do rename their variables
 | `cloudamqp` | byo | sign up at cloudamqp.com | `CLOUDAMQP_URL` |
 | `bonsai` | byo | sign up at bonsai.io | `BONSAI_URL` |
 | `searchbox` / `foundelasticsearch` | byo | sign up with the vendor | `SEARCHBOX_URL` / `FOUNDELASTICSEARCH_URL` |
-| `papertrail` | byo | sign up at papertrailapp.com | `PAPERTRAIL_API_TOKEN` |
+| `papertrail` | byo | sign up at papertrailapp.com. **Injects nothing** — it attaches a *log drain*, and Hatchbox has no drain equivalent, so logging must be re-pointed as a deliberate step. Larger than a token swap | none |
+| `mailtrap` | byo | sign up at mailtrap.io | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILTRAP_API_TOKEN` |
 | `logentries` / `coralogix` | byo | sign up with the vendor | `LOGENTRIES_TOKEN` / `CORALOGIX_PRIVATE_KEY` |
 | `newrelic` | byo | sign up at newrelic.com | `NEW_RELIC_LICENSE_KEY` |
 | `appsignal` | byo | sign up at appsignal.com | `APPSIGNAL_PUSH_API_KEY` |

@@ -8,10 +8,9 @@ case "$*" in
     echo '[{"hostname":"demo.example.com","kind":"custom"}]' ;;
   "releases --json --num 1 --app demo")
     echo '[{"version":42,"description":"Deploy abc1234","commit":"abc1234"}]' ;;
-  "api GET /apps/demo/formation")
-    echo '[{"type":"web","size":"standard-1x","quantity":2},{"type":"worker","size":"standard-1x","quantity":1}]' ;;
-  "api GET /apps/demo")
-    echo '{"name":"demo","stack":{"name":"heroku-22"},"region":{"name":"us"}}' ;;
+  "apps:info --json --app demo")
+    # Shape matches the real CLI: app record plus RUNNING dynos, one entry per dyno.
+    echo '{"app":{"name":"demo","stack":{"name":"heroku-22"},"region":{"name":"us"}},"dynos":[{"type":"web","size":"standard-1x"},{"type":"web","size":"standard-1x"},{"type":"worker","size":"standard-1x"}]}' ;;
   "buildpacks --app demo")
     echo "1. heroku/ruby" ;;
   "pg:info --app demo")
