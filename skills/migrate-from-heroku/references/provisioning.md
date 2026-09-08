@@ -30,6 +30,18 @@ Asking "are you done?" makes the user the scheduler. Poll instead:
 Report what is still missing between polls — "cluster found, waiting on the server" is useful;
 silence is not. Stop polling and hand back to the user after ten minutes with no change.
 
+## Record the server's connection details
+
+`hatchbox_list_servers` does **not** return an IP. Call `hatchbox_get_server` with `cluster_id`
+and `server_id` for the server you are targeting and record `public_ip`, `ssh_port` and
+`ubuntu_version` — Phase 6's `scripts/pg_transfer.sh` needs `public_ip` for `--ssh-host`, and
+without it the transfer step stalls waiting for a value nobody collected.
+
+`size` is also only on the detail response (e.g. `s-1vcpu-2gb`). Compare it against the sizing
+arithmetic in `MIGRATION.md` and say so if the provisioned server is smaller than the estimate —
+the user may have chosen that deliberately, but it should be stated rather than discovered under
+load.
+
 ## Verify before leaving the phase
 
 Confirm the roles actually present against the roles required, and **stop here on a mismatch**

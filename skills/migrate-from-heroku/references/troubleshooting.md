@@ -30,6 +30,10 @@ in the order they actually occur:
 Distinguishable only by message, and they mean different things:
 
 - **Subscription required** — no active subscription. The 7-day trial counts. Nothing works.
+  The message names the account: `An active subscription is required for <account name>`. If the
+  user has more than one account, check you are using the right `account_id` before sending them
+  to billing — this 402 is also what an account they merely belong to, but have not subscribed,
+  returns.
 - **Payment method required** — subscribed, on trial, no card. Gates `domains#create`,
   `domains#update` and `auto_deploys#create` specifically. Everything else works, so this one
   first appears at Phase 7, having let five phases succeed.
