@@ -74,6 +74,13 @@ because a writer living outside `Rakefile`, `lib/tasks`, `bin` and `package.json
 grep. An empty `profile_d_writers` plus a build hook means look harder, not that there is nothing
 there.
 
+**The Ruby buildpack itself sets variables this way, and one of them is `SECRET_KEY_BASE`.**
+Verified against a real Rails 8 app: `SECRET_KEY_BASE` and `RAILS_ENV` appear in `heroku run env`
+and are absent from `heroku config`. A migration that classifies only what `heroku config` returns
+drops `SECRET_KEY_BASE` — the app then boots fine on a freshly generated key while every existing
+session and signed cookie silently becomes invalid, and nothing fails at deploy time to say so.
+This is the canonical case for why the delta exists; do not treat it as an edge case.
+
 Weight this higher than its rarity suggests. A missing credential crashes and gets found; a
 missing *path* or *root directory* does not. An app whose export root silently falls back to a
 default boots, serves traffic, passes a homepage check, and quietly operates on the wrong
