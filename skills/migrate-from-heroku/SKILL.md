@@ -86,3 +86,9 @@ Stop here and have the user approve the file. Nothing is written to Hatchbox unt
 Read `references/provisioning.md`. Print the filled-in checklist, then poll
 `hatchbox_list_account_clusters` and `hatchbox_list_servers` until the server is ready. Verify
 the roles match what the app needs before continuing.
+
+## Phase 4 — Configure
+
+Read `references/configure.md`. Order is load-bearing: create app → create and attach databases
+(reading injected env var names off the responses) → create env vars → set `post_deploy_script`
+→ cron jobs. **Do not create processes here.** Domains wait for Phase 7.
