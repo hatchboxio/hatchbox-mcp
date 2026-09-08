@@ -34,6 +34,12 @@ procfile=$(read_if_present Procfile)
 app_json=$(read_if_present app.json)
 profile=$(read_if_present .profile)
 package_json=$(read_if_present package.json)
+
+# Anything in the repo that writes .profile.d is a generator whose OUTPUT is invisible
+# (gitignored, created at build time) but whose SOURCE is not. Covers package.json
+# heroku-postbuild, bin/ scripts, and the Rakefile/lib/tasks assets:precompile enhance
+# idiom that an importmap or propshaft app uses when it has no package.json at all.
+profile_d_writers=$(grep -rl '\.profile\.d' Rakefile lib/tasks bin package.json 2>/dev/null | tr '\n' ' ' || true)
 puma_config=$(read_if_present config/puma.rb)
 database_yml=$(read_if_present config/database.yml)
 bin_scripts=$(ls bin 2>/dev/null | tr '\n' ' ')
@@ -60,6 +66,7 @@ jq -n \
   --arg app_json "$app_json" \
   --arg profile "$profile" \
   --arg package_json "$package_json" \
+  --arg profile_d_writers "$profile_d_writers" \
   --arg puma_config "$puma_config" \
   --arg database_yml "$database_yml" \
   --arg bin_scripts "$bin_scripts" \
@@ -82,6 +89,7 @@ jq -n \
       app_json: $app_json,
       profile: $profile,
       package_json: $package_json,
+      profile_d_writers: $profile_d_writers,
       puma_config: $puma_config,
       database_yml: $database_yml,
       bin_scripts: $bin_scripts,

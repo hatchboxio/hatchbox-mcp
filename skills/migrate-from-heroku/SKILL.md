@@ -77,8 +77,7 @@ genuinely could not fill something in, **write why in the file** — never leave
 - [ ] `domains` contains a `kind: "custom"` entry → that hostname appears in the Cutover section
 - [ ] `local.gems.rack_timeout` was checked before labelling `RACK_TIMEOUT_SERVICE_TIMEOUT`
 - [ ] the `heroku run env` delta against `config` was either run, or its omission stated — and it
-      is **not optional** if `local.package_json` has a `heroku-postbuild` script or any build
-      script writes into `.profile.d/`
+      is **not optional** if `local.profile_d_writers` is non-empty
 
 Stop here and have the user approve the file. Nothing is written to Hatchbox until they do.
 

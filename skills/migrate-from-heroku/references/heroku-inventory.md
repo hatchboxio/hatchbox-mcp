@@ -53,9 +53,26 @@ report anything exported at dyno boot, and there are two such mechanisms:
   until the build runs, so no source-tree scan reaches it.
 
 That last one has a **static tell**, even though its output is invisible: the generator is in the
-repo. Check `local.package_json` for a `heroku-postbuild` (or `postinstall`) script, and check
-`local.bin_scripts` for anything that writes into `.profile.d/`. If one exists, the runtime delta
-is not optional — the app is exporting something at boot that you cannot otherwise see.
+repo even when what it writes is not. The script does this grep for you and reports the matching
+files as `local.profile_d_writers` — it searches `Rakefile`, `lib/tasks`, `bin` and `package.json`
+for anything mentioning `.profile.d`, which covers all three shapes this takes:
+
+- a `heroku-postbuild` or `postinstall` script in `package.json`
+- a `bin/` script invoked during the build
+- `Rake::Task["assets:precompile"].enhance { ... }` in the `Rakefile` or `lib/tasks/*.rake` — the
+  idiom an importmap or propshaft app uses, since it has **no `package.json` at all**. Don't reach
+  for the package.json tell first; plenty of modern Rails apps don't have one.
+
+**If `local.profile_d_writers` is non-empty the runtime delta is not optional.** The app is
+provably exporting something at boot that nothing in the source tree can show you, and the file
+named is the generator to read.
+
+One limit to know: that grep finds files naming `.profile.d` **directly**. A `heroku-postbuild`
+hook usually just points at another script, so `package.json` itself will not match — the writer
+does. If `local.package_json` has a build hook, follow it to whatever it invokes and check that,
+because a writer living outside `Rakefile`, `lib/tasks`, `bin` and `package.json` is missed by the
+grep. An empty `profile_d_writers` plus a build hook means look harder, not that there is nothing
+there.
 
 Weight this higher than its rarity suggests. A missing credential crashes and gets found; a
 missing *path* or *root directory* does not. An app whose export root silently falls back to a

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Invoked by package.json's heroku-postbuild. THIS is the file that names .profile.d,
+# not package.json -- the build hook only points here.
+set -euo pipefail
+mkdir -p .profile.d
+echo 'export BUILD_STAMPED_TOKEN="'"$(date +%s)"'"' > .profile.d/testbed_runtime.sh
