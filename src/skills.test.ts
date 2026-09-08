@@ -54,6 +54,17 @@ describe("skill tool references", () => {
     expect(gate, "the create pass is the one that gets skipped; the gate must name it").toMatch(/created/);
   });
 
+  it("keeps the Phase 7 cutover gate intact", () => {
+    const skill = readFileSync(join(SKILLS_DIR, "migrate-from-heroku/SKILL.md"), "utf8");
+    const gate = skill.split("### Cutover gate")[1];
+    expect(gate, "SKILL.md has lost its cutover gate").toBeDefined();
+
+    const invariants = (gate.match(/^- \[ \] /gm) ?? []).length;
+    expect(invariants, "the cutover gate should list every precondition").toBeGreaterThanOrEqual(6);
+
+    expect(gate, "rollback depends on Heroku still holding its data").toMatch(/rollback/i);
+  });
+
   it("names only tools the server registers", () => {
     for (const file of markdownFiles(SKILLS_DIR)) {
       const referenced = new Set(readFileSync(file, "utf8").match(/hatchbox_[a-z_]+/g) ?? []);

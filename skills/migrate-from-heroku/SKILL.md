@@ -116,3 +116,20 @@ own test suite, present the diff. Push nothing without approval; a failing suite
       explicitly if it is zero
 - [ ] every process write was polled to a terminal state
 - [ ] the env var ledger's confirmed names match the intended set from `MIGRATION.md`
+
+## Phase 7 — Cutover
+
+Read `references/cutover.md`. Everything here was rehearsed in Phase 6.
+
+TTL down 24h ahead → maintenance on → scale all dynos to 0 → final capture → Hatchbox maintenance
+on → restore → deploy → maintenance off → smoke test on the Hatchbox hostname → create the domain
+and flip DNS.
+
+### Cutover gate — run before flipping DNS
+
+- [ ] Phase 6 was rehearsed end to end, including a real restore
+- [ ] a card is on file — `hatchbox_create_domain` 402s without one, at the very last step
+- [ ] every Procfile dyno type is scaled to 0, not just `web` and `worker`
+- [ ] the smoke test exercised mail, storage, a named queue, and an existing signed cookie
+- [ ] the Heroku app, its add-ons and its data are all still intact for rollback
+- [ ] the rollback order is understood: DNS back first, then `heroku maintenance:off`
