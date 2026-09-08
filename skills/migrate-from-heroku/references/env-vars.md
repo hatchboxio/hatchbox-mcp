@@ -7,7 +7,7 @@ only — never values**.
 ## drop — Heroku injects these; Hatchbox does not need them
 
 - `PORT` — Hatchbox sets it per process via socket activation.
-- `DYNO`, `DYNO_RAM`, `WEB_CONCURRENCY` (if unset by the app itself)
+- `DYNO`, `DYNO_RAM` (`WEB_CONCURRENCY` is a judgment call — see below, do not blanket-drop it)
 - `HEROKU_*` — all of them, including the dyno-metadata labs vars.
 - `DATABASE_URL` — **the attachment supplies this.** Do not carry Heroku's value across.
 - Any add-on var whose add-on is bucketed **drop** in `references/addons.md`.
@@ -26,6 +26,25 @@ add-on, so the user signs up with the vendor directly and supplies a new value u
 variable name. List every one and mark it **needs a value from you** — the skill cannot invent
 these, and a migration that silently carries a dead SendGrid key across looks fine until the
 first password reset email.
+
+## Judgment calls — pick a label AND state why
+
+These are Heroku idioms that are neither obviously portable nor obviously junk. Silently keeping
+or silently dropping one is the failure mode. Each gets a normal label **plus a mandatory Note in
+MIGRATION.md** saying what happened to it and why.
+
+| Var | Label | Reason to state |
+|---|---|---|
+| `RAILS_LOG_TO_STDOUT` | keep | Hatchbox runs app processes under systemd and collects stdout. Dropping it sends logs to `log/production.log`, where nothing reads them |
+| `RAILS_SERVE_STATIC_FILES` | keep | Caddy reverse-proxies to the app rather than serving `public/` itself, so Rails must keep serving assets. Drop it only if you have configured Caddy to serve `public/` directly |
+| `WEB_CONCURRENCY` | re-point | Do not copy the value. It was sized for a dyno's memory; re-derive it from the Hatchbox server's RAM and say what you set and why |
+| `RAILS_MAX_THREADS` | keep | Carry the value, but check it against the database pool size — this is the input to pool sizing, and a mismatch shows up as connection timeouts under load, not at boot |
+| `RACK_TIMEOUT_SERVICE_TIMEOUT` | keep **if** `rack-timeout` is in `Gemfile.lock`, else drop | The variable is inert without the gem. Check `local.gems` rather than assuming |
+| `LANG` | drop | Heroku sets it for the slug runtime; the server sets locale at the OS level |
+| `MALLOC_ARENA_MAX` | keep | A glibc tuning knob, not a Heroku one — it applies the same on Ubuntu |
+
+If a config var looks like platform tuning but is not in this table, treat it as a judgment call
+too: label it, and write the Note.
 
 ## keep — carry across verbatim
 

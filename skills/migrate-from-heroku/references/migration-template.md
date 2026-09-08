@@ -39,6 +39,9 @@ Sizing arithmetic: <show it>
 
 **<n> variables need new values from you** (the re-signup rows). No values appear in this file.
 
+The Note column is **mandatory** for every judgment-call var in `references/env-vars.md` — say
+what you decided and why. A judgment var with a blank Note means the decision was never made.
+
 ## Processes
 
 | Procfile entry | Hatchbox |
