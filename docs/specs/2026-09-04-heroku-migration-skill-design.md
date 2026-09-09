@@ -4,14 +4,12 @@ Date: 2026-09-04
 
 ## Problem
 
-Prospective Hatchbox customers leaving Heroku have no guided path. Cloud 66 publishes a prose
-migration guide (help.cloud66.com/rails/getting-started/migrate-from-heroku/) backed by an
-"Import Heroku data" product feature. Hatchbox has the marketing pages (`vs/heroku`,
-`alternatives/heroku`) but nothing that actually moves an app.
+Prospective Hatchbox customers leaving Heroku have no guided path. Hatchbox has the marketing
+pages (`vs/heroku`, `alternatives/heroku`) but nothing that actually moves an app.
 
-We have something Cloud 66 doesn't: a published MCP server that exposes the whole `/api/v1`
-surface to a coding agent. A migration skill turns that into a guided, mostly-automated
-migration that runs in the customer's own repo.
+What we have to build on is a published MCP server that exposes the whole `/api/v1` surface to a
+coding agent. A migration skill turns that into a guided, mostly-automated migration that runs in
+the customer's own repo.
 
 ## Goals
 
