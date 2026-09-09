@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 case "$*" in
   "config -j --app demo")
-    echo '{"DATABASE_URL":"postgres://u:p@h/d","RAILS_ENV":"production","SECRET_KEY_BASE":"abc","STRIPE_SECRET_KEY":"sk_live_x","PORT":"5000"}' ;;
+    echo '{"DATABASE_URL":"postgres://u:p@h/d","RAILS_ENV":"production","SECRET_KEY_BASE":"abc","STRIPE_SECRET_KEY":"placeholder-not-a-real-key","PORT":"5000"}' ;;
   "addons --json --app demo")
     echo '[{"addon_service":{"name":"heroku-postgresql"},"plan":{"name":"heroku-postgresql:standard-0"}},{"addon_service":{"name":"heroku-redis"},"plan":{"name":"heroku-redis:premium-0"}},{"addon_service":{"name":"scheduler"},"plan":{"name":"scheduler:standard"}}]' ;;
   "domains --json --app demo")
