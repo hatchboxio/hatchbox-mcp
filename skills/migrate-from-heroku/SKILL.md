@@ -80,6 +80,9 @@ genuinely could not fill something in, **write why in the file** — never leave
 - [ ] `local.gems.rack_timeout` was checked before labelling `RACK_TIMEOUT_SERVICE_TIMEOUT`
 - [ ] the `heroku run env` delta against `config` was either run, or its omission stated — and it
       is **not optional** if `local.profile_d_writers` is non-empty
+- [ ] `grep -rn 'ENV\["HEROKU_' app lib bin config` was run before dropping the `HEROKU_*` vars,
+      and every hit has a stated replacement — dropping them is right, dropping them unexamined
+      leaves the reader getting `nil`
 
 Stop here and have the user approve the file. Nothing is written to Hatchbox until they do.
 
@@ -94,6 +97,9 @@ the roles match what the app needs before continuing.
 Read `references/configure.md`. Order is load-bearing: create app → create and attach databases
 (reading injected env var names off the responses) → create env vars → set `post_deploy_script`
 → cron jobs. **Do not create processes here.** Domains wait for Phase 7.
+
+Also record the app's `<hashid>.hatchboxapp.com` hostname here, from the dashboard — no API call
+returns it, and Phases 6 and 7 both smoke test against it.
 
 ## Phase 5 — Repo branch
 
@@ -111,7 +117,7 @@ own test suite, present the diff. Push nothing without approval; a failing suite
 4. **Re-run the release phase after the restore.** This phase deploys before it restores, so the
    restore reverts anything `post_deploy_script` wrote to the source platform's values. Redeploy
    before smoke testing. (Phase 7 restores before deploying and does not need this.)
-5. Smoke test against the Hatchbox hostname, exercising credential paths.
+5. Smoke test against the Hatchbox hostname recorded in Phase 4, exercising credential paths.
 
 ### Reconciliation gate — run before leaving Phase 6
 

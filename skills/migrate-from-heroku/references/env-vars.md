@@ -6,11 +6,36 @@ only — never values**.
 
 ## drop — Heroku injects these; Hatchbox does not need them
 
-- `PORT` — Hatchbox sets it per process via socket activation.
+- `PORT` — Hatchbox sets it per process via socket activation. Because the platform supplies it
+  on **both** sides, a post-migration check that treats a still-present `PORT` as a leftover you
+  wrongly recreated will report a false failure. Confirm against your own ledger instead: if you
+  never created it, it is the platform's.
 - `DYNO`, `DYNO_RAM` (`WEB_CONCURRENCY` is a judgment call — see below, do not blanket-drop it)
-- `HEROKU_*` — all of them, including the dyno-metadata labs vars.
-- `DATABASE_URL` — **the attachment supplies this.** Do not carry Heroku's value across.
+- `HEROKU_*` — all of them, including the dyno-metadata labs vars. **Grep the source before you
+  drop them**, see below.
 - Any add-on var whose add-on is bucketed **drop** in `references/addons.md`.
+
+`DATABASE_URL` is **not** in this list — it is re-point, because the attachment supplies the same
+name. Do not carry Heroku's value across, but do not label it drop either; it has exactly one
+label and that label is re-point.
+
+### Grep the source before dropping `HEROKU_*`
+
+Dropping them is right. Dropping them *without looking* is not. Anything in the app reading one
+gets `nil` and carries on:
+
+```bash
+grep -rn 'ENV\["HEROKU_' app lib bin config
+```
+
+For each hit, decide what supplies the value now. The common one is `HEROKU_SLUG_COMMIT` for a
+deploy/revision marker: Hatchbox writes a **`REVISION`** file into the release root, so read that
+instead. A blank revision breaks nothing at deploy time and is invisible until someone needs to
+know what is running.
+
+Check the Heroku side too before calling it a regression — `HEROKU_SLUG_COMMIT` only exists when
+the dyno-metadata labs feature is enabled, so on many apps the value was already blank and the
+migration changed nothing.
 
 ## re-point — a Hatchbox resource supplies the new value, name unchanged
 
@@ -75,6 +100,18 @@ leaked files was self-cleaning. On a persistent server the same code fills the d
 
 Everything else: `SECRET_KEY_BASE`, `RAILS_ENV`, `RAILS_MASTER_KEY`, app-specific settings,
 third-party keys the user owns directly (Stripe, OpenAI, and so on).
+
+## Setting values means putting them through the conversation
+
+`hatchbox_create_env_vars` takes `value` inline. There is no file input and no reference
+indirection, so every secret you set this way — `SECRET_KEY_BASE`, `RAILS_MASTER_KEY`, SMTP
+passwords, API tokens — passes through the transcript of whatever agent session is running the
+migration, and is stored wherever that transcript is stored.
+
+Say so before doing it, and let the user choose. For a throwaway or staging app it is usually
+fine. For production credentials, offer the alternative: **set the sensitive values by hand in the
+Hatchbox dashboard**, and use the API only for the non-secret ones. Either way the ledger of
+*names* is unaffected, so the Phase 6 verification still works.
 
 ## Collisions and readback
 

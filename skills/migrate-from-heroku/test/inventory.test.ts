@@ -69,7 +69,22 @@ describe("heroku_inventory.sh", () => {
     expect(inventory.local.profile_d_writers).toContain("bin/stamp-runtime-env");
     expect(inventory.local.profile_d_writers).not.toContain("package.json");
     expect(inventory.local.ruby_version).toBe("3.3.4");
-    expect(inventory.local.gems).toEqual({ puma: true, sidekiq: true, solid_queue: false, rails_12factor: false });
+    expect(inventory.local.gems).toEqual({
+      puma: true,
+      sidekiq: true,
+      solid_queue: false,
+      rails_12factor: false,
+      rack_timeout: true,
+    });
+  });
+
+  // The Phase 2 gate requires `local.gems.rack_timeout` to be checked before labelling
+  // RACK_TIMEOUT_SERVICE_TIMEOUT, but the collector never emitted it. Read literally, an
+  // absent field says "gem not installed" and the var gets dropped -- silently removing
+  // request timeouts from the migrated app. The gem is `rack-timeout` with a HYPHEN, so
+  // the lookup has to bridge the name the gate uses and the name the lockfile carries.
+  it("reports rack_timeout, whose gem name is hyphenated", () => {
+    expect(inventory.local.gems.rack_timeout).toBe(true);
   });
 
   it("exits 64 when no app name is given", () => {

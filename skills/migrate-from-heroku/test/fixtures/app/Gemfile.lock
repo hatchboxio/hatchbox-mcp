@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     puma (6.4.2)
+    rack-timeout (0.7.0)
     rails (8.0.1)
     sidekiq (7.2.0)
 

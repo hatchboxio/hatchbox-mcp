@@ -16,6 +16,25 @@ clean up. Also set `health_check_uri`
 if the app has a health endpoint — Hatchbox polls it to decide whether a deploy succeeded, and
 without it a booting-but-broken app reports a successful deploy.
 
+### Record the app's Hatchbox hostname now — the API will not give it to you
+
+Every app gets a hostname of the form `<hashid>.hatchboxapp.com`, and Phase 6 and Phase 7 both
+smoke test against it. **No API call returns it.** `hatchbox_get_app` does not include it, and
+`hatchbox_list_domains` returns `[]` until a custom domain exists — the hostname is derived from
+the app's hashid rather than stored as a domain record.
+
+So ask the user to read it off the app's page in the dashboard, and record it in the ledger next
+to the app id. Do it here, at creation, not at Phase 6 — discovering the gap mid-cutover with the
+maintenance window open is the bad version.
+
+Two conditions have to hold for that hostname to resolve at all, and both are set at creation
+time:
+
+- The cluster must already have a server with a public IP. The DNS record is written by an
+  `after_create_commit` hook that is skipped when the cluster has no IP yet, and **nothing
+  retries it**. Provision the server before creating the app.
+- Hostname DNS is managed by Hatchbox. There is nothing for the user to configure.
+
 ## 2. Create and attach databases
 
 `hatchbox_create_database` with `database_cluster_id` and `name`, then `hatchbox_attach_database`
@@ -45,6 +64,10 @@ existing session and signed cookie without failing anything.
 
 Record the returned names. This is the only readback that exists.
 
+Values go inline in the tool call, which means they go through the conversation. See
+"Setting values means putting them through the conversation" in `references/env-vars.md`, and
+raise it with the user before sending production credentials.
+
 ## 4. Set the scripts
 
 `hatchbox_update_app` with `post_deploy_script` ← the Heroku release phase command.
@@ -72,8 +95,14 @@ the data is restored and possibly before the env vars are complete.
 
 **Before disabling it, know the trap.** `hatchbox_disable_app_auto_deploy` is ungated, but
 `auto_deploys#create` — re-enabling — sits behind `require_payment_method!`. On a trial without a
-card you can turn it off and then be unable to turn it back on. So either leave it on and take
-care not to push to the app's branch until Phase 6, or confirm a card is on file first.
+card you can turn it off and then be unable to turn it back on.
+
+**No API call reports whether a card is on file.** `hatchbox_get_account` does not include it and
+there is no billing tool, so "check first" means asking the user to look in the dashboard. If you
+are not going to ask, take the other branch: **leave auto-deploy on** and make sure nothing pushes
+to the app's branch until Phase 6 is done. Phase 5 works on a `hatchbox-migration` branch and
+pushes nothing, so the realistic risk is a teammate or another agent session pushing to the
+deploy branch while the app has no data.
 
 Say which one you chose in `MIGRATION.md`. Silently disabling a feature the user cannot restore
 is worse than the hazard it avoids.

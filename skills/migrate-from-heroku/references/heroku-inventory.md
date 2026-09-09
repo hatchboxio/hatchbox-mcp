@@ -7,13 +7,13 @@ from that file — do not re-run `heroku` commands ad hoc, because the script is
 
 | Key | Source | What to do with it |
 |---|---|---|
-| `app.stack` | `heroku api GET /apps/<app>` | `heroku-24`/`heroku-22` imply the Ubuntu baseline; note it in MIGRATION.md, nothing to port |
+| `app.stack` | `heroku apps:info --json` | `heroku-24`/`heroku-22` imply the Ubuntu baseline; note it in MIGRATION.md, nothing to port |
 | `app.region.name` | same | Pick the matching Hatchbox provider region in Phase 3 |
 | `config` | `heroku config -j` | Classify per `references/env-vars.md`. **Contains live secrets** |
 | `addons` | `heroku addons --json` | Map per `references/addons.md`. Unmappable add-on = blocker |
 | `domains` | `heroku domains --json` | `kind: "custom"` entries become Hatchbox domains in Phase 7 |
 | `releases[0]` | `heroku releases --json --num 1` | Current deployed commit — the rollback reference point |
-| `formation` | `heroku api GET /apps/<app>/formation` | Dyno types/sizes/quantities drive server sizing |
+| `formation` | derived from `apps_info.dynos`, grouped by type | Dyno types/sizes/quantities drive server sizing. There is **no** `heroku api` CLI command — an earlier version of this table named one, the fixture implemented it faithfully, and `app`/`formation` were silently null on every real run |
 | `buildpacks` | `heroku buildpacks` | Anything beyond `heroku/ruby` and `heroku/nodejs` is a blocker |
 | `pg_info` | `heroku pg:info` | Plan, PG version, data size — drives server disk and the restore window |
 | `local.procfile` | `./Procfile` | Reconciled against auto-detection in Phase 4 |
@@ -22,7 +22,7 @@ from that file — do not re-run `heroku` commands ad hoc, because the script is
 | `local.database_yml` | `./config/database.yml` | Confirm it reads `DATABASE_URL` rather than hardcoding a host |
 | `local.bin_scripts` | `ls bin` | A `bin/` entry Heroku's release phase called must be reachable from `post_deploy_script` |
 | `local.ruby_version` | `Gemfile.lock` | Must be an available Ruby on Hatchbox |
-| `local.gems` | `Gemfile.lock` | `rails_12factor` gets removed; `puma`/`sidekiq`/`solid_queue` predict auto-detection |
+| `local.gems` | `Gemfile.lock` | `rails_12factor` gets removed; `puma`/`sidekiq`/`solid_queue` predict auto-detection; `rack_timeout` decides whether `RACK_TIMEOUT_SERVICE_TIMEOUT` is live or inert (the gem is hyphenated, `rack-timeout`, and the key is not) |
 
 ## What the script cannot collect
 

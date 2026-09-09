@@ -19,7 +19,8 @@ old value is still cached when you flip.
 5. Restore per `references/database-transfer.md`.
 6. `hatchbox_deploy_app`, poll `hatchbox_get_log` to terminal.
 7. `hatchbox_disable_app_maintenance`.
-8. Smoke test against the **Hatchbox hostname**, before any DNS change.
+8. Smoke test against the **Hatchbox hostname** recorded in Phase 4 (`<hashid>.hatchboxapp.com`
+   — the API does not return it), before any DNS change.
 9. `hatchbox_create_domain` with `app_id` and `name`, then point DNS at the server and verify.
 
 Step 9 is the first `require_payment_method!` gate the migration touches. On a trial without a

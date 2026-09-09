@@ -91,6 +91,7 @@ jq -n \
   --argjson sidekiq "$(has_gem sidekiq)" \
   --argjson solid_queue "$(has_gem solid_queue)" \
   --argjson rails_12factor "$(has_gem rails_12factor)" \
+  --argjson rack_timeout "$(has_gem rack-timeout)" \
   '{
     app: ($apps_info.app // null),
     formation: (
@@ -120,7 +121,8 @@ jq -n \
         puma: $puma,
         sidekiq: $sidekiq,
         solid_queue: $solid_queue,
-        rails_12factor: $rails_12factor
+        rails_12factor: $rails_12factor,
+        rack_timeout: $rack_timeout
       }
     }
   }' > "$out"
