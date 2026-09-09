@@ -132,15 +132,19 @@ own test suite, present the diff. Push nothing without approval; a failing suite
 
 Read `references/cutover.md`. Everything here was rehearsed in Phase 6.
 
-TTL down 24h ahead → maintenance on → scale all dynos to 0 → final capture → Hatchbox maintenance
-on → restore → deploy → maintenance off → smoke test on the Hatchbox hostname → create the domain
-and flip DNS.
+TTL down 24h ahead → maintenance on → scale **every** dyno type to 0 → **delete the Heroku
+Scheduler jobs** → final capture → Hatchbox maintenance on → restore → deploy → maintenance off →
+smoke test on the Hatchbox hostname → create the domain and flip DNS → verify HTTPS.
 
 ### Cutover gate — run before flipping DNS
 
 - [ ] Phase 6 was rehearsed end to end, including a real restore
 - [ ] a card is on file — `hatchbox_create_domain` 402s without one, at the very last step
 - [ ] every Procfile dyno type is scaled to 0, not just `web` and `worker`
+- [ ] the Heroku Scheduler jobs are deleted — scaling to 0 does **not** stop them, they run on
+      one-off dynos, and the Hatchbox cron jobs are already doing that work
 - [ ] the smoke test exercised mail, storage, a named queue, and an existing signed cookie
+- [ ] HTTPS on the custom domain was verified with a real request, not inferred from the domain
+      record existing — and any wildcard domain has `dns_provider`/`dns_access_token` set
 - [ ] the Heroku app, its add-ons and its data are all still intact for rollback
 - [ ] the rollback order is understood: DNS back first, then `heroku maintenance:off`
