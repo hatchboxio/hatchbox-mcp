@@ -1,0 +1,7 @@
+require_relative "config/application"
+Rails.application.load_tasks
+
+# The importmap/propshaft shape: no package.json needed, generator lives here.
+Rake::Task["assets:precompile"].enhance do
+  File.write(".profile.d/testbed_runtime.sh", "export BUILD_STAMPED_TOKEN=#{SecureRandom.hex}\n")
+end

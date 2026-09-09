@@ -19,15 +19,21 @@ export class HatchboxApiError extends Error {
 export interface HatchboxClientConfig {
   baseUrl: string;
   token: string;
+  /** If set, every request raises this instead of calling the API. */
+  configError?: string;
 }
 
 export class HatchboxClient {
   private readonly baseUrl: string;
   private readonly token: string;
+  /** Set when the client was built without usable credentials. Raised on first use, not at
+   *  construction, so the MCP transport can still connect and report it to the caller. */
+  private readonly configError?: string;
 
   constructor(config: HatchboxClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/+$/, "");
     this.token = config.token;
+    this.configError = config.configError;
   }
 
   async get(path: string, query?: Record<string, string | number | undefined>) {
@@ -66,6 +72,8 @@ export class HatchboxClient {
       includeHeaders?: boolean;
     } = {},
   ): Promise<unknown> {
+    if (this.configError) throw new HatchboxConfigError(this.configError);
+
     const url = new URL(`${this.baseUrl}${path}`);
     for (const [key, value] of Object.entries(opts.query ?? {})) {
       if (value !== undefined) url.searchParams.set(key, String(value));
@@ -127,6 +135,10 @@ function describeError(status: number, body: unknown): string {
   }
 }
 
+/** The server is misconfigured — a missing token, say. Not a failure of the request, and not a
+ *  bug: the message says what the operator has to do, so it is surfaced without crash framing. */
+export class HatchboxConfigError extends Error {}
+
 const DEFAULT_BASE_URL = "https://hatchbox.io/api/v1";
 
 export function clientFromEnv(): HatchboxClient {
@@ -134,9 +146,15 @@ export function clientFromEnv(): HatchboxClient {
   const token = process.env.HATCHBOX_API_TOKEN;
 
   if (!token) {
-    throw new Error(
-      "HATCHBOX_API_TOKEN is not set. Create one at https://hatchbox.io/api_tokens and set it in the MCP server config.",
-    );
+    // Deliberately not thrown here. Throwing killed the process before the transport
+    // connected, so the client showed a generic connection failure and this message -- the
+    // only one that tells the user what to do -- was lost with the process.
+    return new HatchboxClient({
+      baseUrl,
+      token: "",
+      configError:
+        "HATCHBOX_API_TOKEN is not set. Create one at https://hatchbox.io/api_tokens and set it in the MCP server config (for the Claude Code plugin, export it in the environment you launch Claude Code from).",
+    });
   }
 
   return new HatchboxClient({ baseUrl, token });

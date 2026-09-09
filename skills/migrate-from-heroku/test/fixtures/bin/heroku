@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+case "$*" in
+  "config -j --app demo")
+    echo '{"DATABASE_URL":"postgres://u:p@h/d","RAILS_ENV":"production","SECRET_KEY_BASE":"abc","STRIPE_SECRET_KEY":"sk_live_x","PORT":"5000"}' ;;
+  "addons --json --app demo")
+    echo '[{"addon_service":{"name":"heroku-postgresql"},"plan":{"name":"heroku-postgresql:standard-0"}},{"addon_service":{"name":"heroku-redis"},"plan":{"name":"heroku-redis:premium-0"}},{"addon_service":{"name":"scheduler"},"plan":{"name":"scheduler:standard"}}]' ;;
+  "domains --json --app demo")
+    echo '[{"hostname":"demo.example.com","kind":"custom"}]' ;;
+  "releases --json --num 1 --app demo")
+    echo '[{"version":42,"description":"Deploy abc1234","commit":"abc1234"}]' ;;
+  "apps:info --json --app demo")
+    # Shape matches the real CLI: app record plus RUNNING dynos, one entry per dyno.
+    echo '{"app":{"name":"demo","stack":{"name":"heroku-22"},"region":{"name":"us"}},"dynos":[{"type":"web","size":"standard-1x"},{"type":"web","size":"standard-1x"},{"type":"worker","size":"standard-1x"}]}' ;;
+  "buildpacks --app demo")
+    echo "1. heroku/ruby" ;;
+  "pg:info --app demo")
+    printf '=== DATABASE_URL\nPlan:                  Standard 0\nPG Version:            16.3\nData Size:            2.4 GB\n' ;;
+  *)
+    echo "fake heroku: unhandled args: $*" >&2; exit 1 ;;
+esac
