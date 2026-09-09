@@ -1,4 +1,4 @@
-import { HatchboxApiError } from "../client.js";
+import { HatchboxApiError, HatchboxConfigError } from "../client.js";
 
 /** Annotations for tools that only read data (safe HTTP methods). */
 export const READ_ONLY = { readOnlyHint: true, openWorldHint: true } as const;
@@ -28,6 +28,9 @@ export async function runAction(fn: () => Promise<ToolResult>): Promise<ToolResu
   try {
     return await fn();
   } catch (err) {
+    if (err instanceof HatchboxConfigError) {
+      return errorResult(err.message);
+    }
     if (err instanceof HatchboxApiError) {
       return errorResult(`Hatchbox API error (${err.status}): ${err.message}`);
     }

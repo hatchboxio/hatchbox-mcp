@@ -144,9 +144,27 @@ describe("clientFromEnv", () => {
     vi.unstubAllGlobals();
   });
 
-  it("throws when HATCHBOX_API_TOKEN is missing", () => {
+  // A missing token used to throw here, which killed the process before the transport
+  // connected. The MCP client then showed only a generic "failed to connect", and the one
+  // message that would have fixed it -- create a token at this URL -- went to the stderr of a
+  // process that no longer existed. Forgetting the token is the most common setup mistake, so
+  // it has to surface somewhere a person actually reads.
+  it("does not throw when HATCHBOX_API_TOKEN is missing, so the server still starts", () => {
     process.env.HATCHBOX_BASE_URL = "https://example.com";
-    expect(() => clientFromEnv()).toThrow(/HATCHBOX_API_TOKEN/);
+    expect(() => clientFromEnv()).not.toThrow();
+  });
+
+  it("reports the missing token on first use, where the caller can relay it", async () => {
+    process.env.HATCHBOX_BASE_URL = "https://example.com";
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(clientFromEnv().get("/me")).rejects.toThrow(
+      /HATCHBOX_API_TOKEN is not set.*hatchbox\.io\/api_tokens/s,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
   });
 
   it("constructs a client when both are set", () => {
