@@ -1,6 +1,6 @@
 {
   "name": "@hatchbox/hatchbox-mcp",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "MCP server that wraps the Hatchbox /api/v1 API",
   "type": "module",
   "main": "build/index.js",
