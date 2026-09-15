@@ -2,7 +2,7 @@
 
 An MCP server that wraps Hatchbox's `/api/v1` API, so an LLM agent can inspect and operate your Hatchbox apps, domains, databases, and servers.
 
-It also ships a Claude Code skill, **`migrate-from-heroku`**, which uses those tools to take a Rails app from Heroku to Hatchbox. See [The migration skill](#the-migration-skill).
+It also ships a Claude Code skill, **`migrate-from-heroku`**, which uses those tools to take a Rails app from Heroku to Hatchbox. See [Migrating from Heroku](#migrating-from-heroku).
 
 ## Tools
 
@@ -60,81 +60,45 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
    }
    ```
 
-## Plugin (Claude Code)
+## Migrating from Heroku
 
-The plugin installs the MCP server and the `migrate-from-heroku` skill together, version-locked:
-plugin 0.8.1 runs server 0.8.1.
+The `migrate-from-heroku` skill moves one Rails app from Heroku to Hatchbox in Claude Code. It
+plans before it changes anything and waits for your approval, then creates your app, databases,
+env vars and cron jobs on Hatchbox, rehearses the deploy and data transfer, and finally cuts over.
+Your Heroku app is left intact throughout, so you can always roll back.
 
-```
-/plugin marketplace add hatchboxio/hatchbox-mcp
-/plugin install hatchbox@hatchbox
-```
+### Install and run
 
-Set `HATCHBOX_API_TOKEN` in the environment you launch Claude Code from — the plugin passes it
-through. Restart afterwards; a running session does not pick up a changed environment.
-
-If the tools do not appear, run `/mcp`. A cached connection failure makes the server look absent
-and reconnects in one command, without a restart.
+1. Install or update Claude Code to the latest version
+2. Make sure your Hatchbox account has an active subscription
+3. Create an API token at https://hatchbox.io/api_tokens
+4. Add `export HATCHBOX_API_TOKEN=<your token>` to your shell profile (e.g. `~/.zshrc`)
+5. Install the Heroku CLI, run `heroku login`, and confirm with `heroku auth:whoami`
+6. Install `jq` (`brew install jq`)
+7. In the Hatchbox dashboard, connect GitHub and grant it access to the repo of the Rails app you're migrating
+8. In the Hatchbox dashboard, add your SSH public key so you can `ssh deploy@<server-ip>` — the database restore runs from a shell on the server
+9. In the Hatchbox dashboard, create a cluster in the region closest to your Heroku app's region
+10. In that cluster, create a server with the `web` and `postgresql` roles, plus `redis` if you use Sidekiq or Redis, `worker` for any non-web Procfile entries, and `cron` if you use Heroku Scheduler — wait until it shows active
+11. Open a **new** terminal window so it picks up `HATCHBOX_API_TOKEN`, then start Claude Code from there
+12. Run `/plugin marketplace add hatchboxio/hatchbox-mcp`
+13. Run `/plugin install hatchbox@hatchbox`
+14. Quit and restart Claude Code, again from a terminal that has the token
+15. Run `/mcp` and confirm `hatchbox` is connected; if it isn't, reconnect it there
+16. Ask Claude to call `hatchbox_get_me` and confirm it returns your user
+17. `cd` into the Rails app's repo and make sure `git status` is clean
+18. Ask Claude to run the `migrate-from-heroku` skill on your Heroku app, giving it the Heroku app name
+19. Answer what it stops to ask for: your Heroku Scheduler jobs, approval of the generated `MIGRATION.md`, your app's `<hashid>.hatchboxapp.com` hostname from the dashboard, fresh credentials for any add-ons you're re-signing up for, and the output of the database restore commands you run on the server
+20. Stop after Phase 6 unless you have a custom domain you control and are prepared for a real cutover — Phase 7 has not been tested yet
+21. Report anything that was wrong, confusing, or needed a workaround at https://github.com/hatchboxio/hatchbox-mcp/issues, noting which phase it happened in
 
 ### Updating
 
-```
-/plugin marketplace update hatchbox
-/plugin update hatchbox@hatchbox
-```
+1. Run `/plugin marketplace update hatchbox`
+2. Run `/plugin update hatchbox@hatchbox`
+3. Restart Claude Code
 
-That updates both halves at once — the skill files ship inside the plugin, and the pinned `npx`
-spec moves the server with it. Restart to apply.
-
-Note that updates compare version strings: a release whose version did not change is treated as
-already current and silently does nothing.
-
-Users of other MCP clients configure the server directly per the Setup section above. The skill
-is Claude Code specific.
-
-## The migration skill
-
-`migrate-from-heroku` takes one Rails app from Heroku to Hatchbox across eight phases: preflight,
-inventory, a reviewed plan, provisioning handoff, configuration, repo changes, a rehearsed deploy
-and data transfer, then cutover.
-
-**It is not read-only.** Phases 0–2 only read, and stop at a plan you approve. From Phase 4 it
-creates apps, databases, env vars and cron jobs on Hatchbox; Phase 6 restores your database over
-the Hatchbox one; Phase 7 scales your Heroku dynos to zero and moves DNS. Nothing is written
-until you approve the plan, and the Heroku app is left intact so a rollback is always available.
-
-Phases 0–6 have been validated end to end against a real app. **Phase 7 has not been executed** —
-the DNS flip, certificate issuance and the payment-method gate are documented and desk-checked but
-unproven. Treat a first cutover accordingly.
-
-### Before you start
-
-On Hatchbox, in the dashboard — none of this can be done through the API:
-
-- A **cluster**, in a region matching your Heroku app's.
-- A **server** in it, **provisioned before you create the app**, or the app's automatic hostname
-  never gets a DNS record and nothing retries.
-- **Roles** on that server: `web` and `postgresql` always; `redis` if you use Sidekiq or have a
-  `REDIS_URL`; `worker` for any non-`web` Procfile entry; `cron` if you have Scheduler jobs.
-  A missing `cron` role fails cron creation three phases later, long after the cause.
-- An **active subscription** on the account. Every endpoint but account discovery is 402-gated.
-
-Locally:
-
-- The **Heroku CLI**, logged in (`heroku auth:whoami`).
-- **`jq`** (`brew install jq`), used by the inventory script.
-- A **clean git working tree** in the Rails app you are migrating.
-
-### What the skill will ask you for
-
-It cannot get these itself, and it will stop and ask rather than guess:
-
-- **Your Heroku Scheduler jobs.** They live only in the add-on's dashboard — absent from
-  `heroku addons --json` and the platform API.
-- **Your app's Hatchbox hostname** (`<hashid>.hatchboxapp.com`), which no API call returns.
-- **New credentials** for any add-on you are re-signing up for directly. The Heroku-issued ones
-  die with the add-on.
-- **A shell on the server** for the database restore, which it prints rather than runs.
+Using a different MCP client? Configure the server directly as described in [Setup](#setup) — the
+skill itself is Claude Code only.
 
 ## Development
 
