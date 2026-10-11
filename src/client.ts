@@ -21,6 +21,9 @@ export interface HatchboxClientConfig {
   token: string;
   /** If set, every request raises this instead of calling the API. */
   configError?: string;
+  /** What to tell the user when the API rejects the token. Defaults to the stdio advice about
+   *  HATCHBOX_API_TOKEN; the remote server says to sign in again instead. */
+  unauthorizedMessage?: string;
 }
 
 export class HatchboxClient {
@@ -29,11 +32,13 @@ export class HatchboxClient {
   /** Set when the client was built without usable credentials. Raised on first use, not at
    *  construction, so the MCP transport can still connect and report it to the caller. */
   private readonly configError?: string;
+  private readonly unauthorizedMessage: string;
 
   constructor(config: HatchboxClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/+$/, "");
     this.token = config.token;
     this.configError = config.configError;
+    this.unauthorizedMessage = config.unauthorizedMessage ?? DEFAULT_UNAUTHORIZED_MESSAGE;
   }
 
   async get(path: string, query?: Record<string, string | number | undefined>) {
@@ -94,7 +99,7 @@ export class HatchboxClient {
     const parsed = text.length > 0 ? safeJsonParse(text) : undefined;
 
     if (!response.ok) {
-      throw new HatchboxApiError(response.status, describeError(response.status, parsed), parsed);
+      throw new HatchboxApiError(response.status, describeError(response.status, parsed, this.unauthorizedMessage), parsed);
     }
 
     if (opts.includeHeaders) {
@@ -113,7 +118,9 @@ function safeJsonParse(text: string): unknown {
   }
 }
 
-function describeError(status: number, body: unknown): string {
+const DEFAULT_UNAUTHORIZED_MESSAGE = "Unauthorized — the configured HATCHBOX_API_TOKEN is missing or invalid.";
+
+function describeError(status: number, body: unknown, unauthorizedMessage: string): string {
   if (body && typeof body === "object") {
     if ("error" in body && typeof (body as any).error === "string") {
       return (body as any).error;
@@ -125,7 +132,7 @@ function describeError(status: number, body: unknown): string {
 
   switch (status) {
     case 401:
-      return "Unauthorized — the configured HATCHBOX_API_TOKEN is missing or invalid.";
+      return unauthorizedMessage;
     case 404:
       return "Not found.";
     case 429:
