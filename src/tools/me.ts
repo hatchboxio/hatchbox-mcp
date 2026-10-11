@@ -8,7 +8,7 @@ export function registerMeTools(server: McpServer, client: HatchboxClient) {
     {
       title: "Get Current Hatchbox User",
       description:
-        "Fetch the Hatchbox user identified by the configured HATCHBOX_API_TOKEN. Useful as a connectivity/auth check " +
+        "Fetch the Hatchbox user these tools act as: the signed in user, or the owner of HATCHBOX_API_TOKEN. Useful as a connectivity/auth check " +
         "before calling other hatchbox_* tools. No parameters.",
       inputSchema: {},
       annotations: READ_ONLY,

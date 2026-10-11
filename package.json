@@ -5,15 +5,17 @@
   "type": "module",
   "main": "build/index.js",
   "bin": {
-    "hatchbox-mcp": "build/index.js"
+    "hatchbox-mcp": "build/index.js",
+    "hatchbox-mcp-http": "build/serve.js"
   },
   "files": [
     "build"
   ],
   "scripts": {
-    "build": "tsc && chmod +x build/index.js",
+    "build": "tsc && chmod +x build/index.js build/serve.js",
     "dev": "tsx src/index.ts",
     "start": "node build/index.js",
+    "start:http": "node build/serve.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -41,9 +43,11 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^5.3.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^26.1.2",
     "tsx": "^4.23.10",
     "typescript": "^7.0.2",

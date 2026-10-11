@@ -100,6 +100,36 @@ Your Heroku app is left intact throughout, so you can always roll back.
 Using a different MCP client? Configure the server directly as described in [Setup](#setup) — the
 skill itself is Claude Code only.
 
+## Remote server
+
+The same tools can also run as a remote MCP server over Streamable HTTP, where users sign in to Hatchbox through the browser instead of creating an API token. This is what Hatchbox runs at `https://mcp.hatchbox.io/mcp`; it isn't live yet.
+
+How it works:
+
+1. A client calls `/mcp` without a token and gets a `401` with `WWW-Authenticate: Bearer resource_metadata="https://mcp.hatchbox.io/.well-known/oauth-protected-resource/mcp"`.
+2. That document names `https://hatchbox.io` as the authorization server. The client registers itself there, signs the user in, and gets an access token.
+3. Each request's bearer token is checked at Hatchbox's `/oauth/introspect`, then forwarded to the Hatchbox API by the tools, so the API enforces the same access as for any other client. Hatchbox API tokens work as bearer tokens too.
+
+The server keeps no sessions. Every POST builds a fresh server for its token, so it scales horizontally. An active token is reused for up to a minute before it's checked again, so revoking access takes up to a minute to reach this server. The Hatchbox API rejects a revoked token immediately.
+
+To run it, create a **confidential** OAuth application in the Hatchbox admin (no redirect URI is needed beyond a placeholder, since it's only used to introspect tokens) and set:
+
+| Variable | Default | |
+|---|---|---|
+| `HATCHBOX_OAUTH_CLIENT_ID` | — | Required. The application's client ID. |
+| `HATCHBOX_OAUTH_CLIENT_SECRET` | — | Required. The application's client secret. |
+| `MCP_SERVER_URL` | `https://mcp.hatchbox.io/mcp` | This server's public MCP endpoint. Its path is where MCP is served. Hatchbox must list it in `config.oauth_provider.resources`. |
+| `HATCHBOX_URL` | `https://hatchbox.io` | The Hatchbox app that signs users in. |
+| `HATCHBOX_BASE_URL` | `$HATCHBOX_URL/api/v1` | The API the tools call. |
+| `PORT` | `3000` | |
+
+```
+npm run build
+npm run start:http
+```
+
+`GET /up` answers health checks. The `Procfile` runs the same command.
+
 ## Development
 
 To work on `hatchbox-mcp` itself rather than just using it:
