@@ -14,6 +14,8 @@ import { registerServersTools } from "./tools/servers.js";
 import { registerBackupsTools } from "./tools/backups.js";
 import { registerLogsTools } from "./tools/logs.js";
 import { registerFirewallRulesTools } from "./tools/firewallRules.js";
+import { registerContainersTools } from "./tools/containers.js";
+import { registerAccessoriesTools } from "./tools/accessories.js";
 
 // Read from package.json rather than repeating the number here. npm always ships package.json
 // regardless of the `files` allowlist, so this resolves in the published package too.
@@ -40,6 +42,8 @@ export function createServer(client: HatchboxClient): McpServer {
   registerBackupsTools(server, client);
   registerLogsTools(server, client);
   registerFirewallRulesTools(server, client);
+  registerContainersTools(server, client);
+  registerAccessoriesTools(server, client);
 
   return server;
 }
