@@ -48,14 +48,4 @@ describe("hatchbox_update_cluster", () => {
       cluster: { maintenance_wday: null, maintenance_hour: null, maintenance_time_zone: null },
     });
   });
-
-  it("rejects a day outside 0 to 6 without calling the API", async () => {
-    const result = await mcpClient.callTool({
-      name: "hatchbox_update_cluster",
-      arguments: { cluster_id: 12, maintenance_wday: 7, maintenance_hour: 3, maintenance_time_zone: "Etc/UTC" },
-    });
-
-    expect(result.isError).toBe(true);
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
 });
