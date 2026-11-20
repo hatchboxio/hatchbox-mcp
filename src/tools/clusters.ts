@@ -7,7 +7,6 @@ const clusterIdSchema = {
   cluster_id: z.number().int().describe("Numeric cluster id (see hatchbox_list_account_clusters)."),
 };
 
-// null clears a field, which is how the window is removed (all three at once)
 const clusterWriteFields = {
   maintenance_wday: z
     .number()
@@ -35,16 +34,6 @@ const clusterWriteFields = {
     .optional(),
 };
 
-const CLUSTER_WRITE_KEYS = Object.keys(clusterWriteFields) as (keyof typeof clusterWriteFields)[];
-
-function clusterParams(args: Record<string, unknown>): Record<string, unknown> {
-  const cluster: Record<string, unknown> = {};
-  for (const key of CLUSTER_WRITE_KEYS) {
-    if (args[key] !== undefined) cluster[key] = args[key];
-  }
-  return cluster;
-}
-
 export function registerClustersTools(server: McpServer, client: HatchboxClient) {
   server.registerTool(
     "hatchbox_get_cluster",
@@ -71,16 +60,14 @@ export function registerClustersTools(server: McpServer, client: HatchboxClient)
         "Set, move, or clear a Hatchbox cluster's weekly maintenance window, the only cluster setting the API can " +
         "change. Only the fields you pass are changed. A window needs all three of maintenance_wday, " +
         "maintenance_hour, and maintenance_time_zone (422 otherwise); pass null for all three to remove it. Each " +
-        "week in the window's 3 hours Hatchbox updates the servers one at a time, which can restart services like " +
+        "week during the window Hatchbox updates the servers one at a time, which can restart services like " +
         "PostgreSQL and Redis, and every server's nightly security upgrade moves to its own slot starting at the " +
         "window's hour. Returns the updated cluster, as hatchbox_get_cluster does.",
       inputSchema: { ...clusterIdSchema, ...clusterWriteFields },
       annotations: WRITE,
     },
-    async (args) =>
-      runAction(async () => {
-        const { cluster_id } = args;
-        return jsonResult(await client.patch(`/clusters/${cluster_id}`, { cluster: clusterParams(args) }));
-      }),
+    // Omitted fields are undefined, which JSON.stringify drops, so only the fields passed are sent
+    async ({ cluster_id, ...cluster }) =>
+      runAction(async () => jsonResult(await client.patch(`/clusters/${cluster_id}`, { cluster }))),
   );
 }

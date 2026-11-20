@@ -18,7 +18,8 @@ describe("hatchbox_update_cluster", () => {
     await Promise.all([server.connect(serverTransport), mcpClient.connect(clientTransport)]);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await mcpClient.close();
     vi.unstubAllGlobals();
   });
 
