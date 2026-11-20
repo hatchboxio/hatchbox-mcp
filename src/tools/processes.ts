@@ -47,13 +47,44 @@ const processWriteFields = {
   appsignal_options: z.string().describe("Extra CLI options passed to appsignal-wrap when appsignal is enabled.").optional(),
 };
 
+// Only apply on a Dockerfile cluster (cluster deploy_strategy "docker"), where each process is a container.
+// Sent nested under `container` and merged server-side, so passing one leaves the others as they are.
+const containerWriteFields = {
+  stop_timeout: z
+    .number()
+    .int()
+    .min(1)
+    .max(600)
+    .describe("Dockerfile clusters only. Seconds a container gets after SIGTERM before it's killed on a deploy or restart. Defaults to 30.")
+    .optional(),
+  memory_mb: z
+    .number()
+    .int()
+    .min(64)
+    .describe("Dockerfile clusters only. Memory limit per container in megabytes; one that runs out is killed and restarted.")
+    .optional(),
+  cpus: z
+    .number()
+    .positive()
+    .describe("Dockerfile clusters only. CPU limit per container, like 0.5 or 2. Capped at the server's CPU count.")
+    .optional(),
+};
+
 const PROCESS_WRITE_KEYS = Object.keys(processWriteFields) as (keyof typeof processWriteFields)[];
+const CONTAINER_WRITE_KEYS = Object.keys(containerWriteFields) as (keyof typeof containerWriteFields)[];
 
 function processParams(args: Record<string, unknown>): Record<string, unknown> {
   const process: Record<string, unknown> = {};
   for (const key of PROCESS_WRITE_KEYS) {
     if (args[key] !== undefined) process[key] = args[key];
   }
+
+  const container: Record<string, unknown> = {};
+  for (const key of CONTAINER_WRITE_KEYS) {
+    if (args[key] !== undefined) container[key] = args[key];
+  }
+  if (Object.keys(container).length > 0) process.container = container;
+
   return process;
 }
 
@@ -86,12 +117,14 @@ export function registerProcessesTools(server: McpServer, client: HatchboxClient
     {
       title: "Create App Process",
       description:
-        "Create a new process (web/worker/cron) on a Hatchbox app. Requires name and start_command. Set either " +
+        "Create a new process (web/worker/cron) on a Hatchbox app. Requires name and start_command (on a Dockerfile " +
+          "cluster start_command may be blank to run the image's own command). Set either " +
         "server_id or roles to control where it runs (not both) — omit both to leave it unscheduled. Asynchronous " +
         "— returns a log_id, follow up with hatchbox_get_log.",
       inputSchema: {
         ...appIdSchema,
         ...processWriteFields,
+        ...containerWriteFields,
         name: z.string().regex(PROCESS_NAME_REGEX).describe("Process name, letters/numbers/underscore/hyphen only. Unique per app."),
         start_command: z.string().describe("Shell command that starts the process."),
       },
@@ -109,7 +142,7 @@ export function registerProcessesTools(server: McpServer, client: HatchboxClient
     {
       title: "Update App Process",
       description: "Update a process on a Hatchbox app. Only the fields you pass are changed. Asynchronous — returns a log_id, follow up with hatchbox_get_log.",
-      inputSchema: { ...processIdSchema, ...processWriteFields },
+      inputSchema: { ...processIdSchema, ...processWriteFields, ...containerWriteFields },
       annotations: WRITE,
     },
     async (args) =>
