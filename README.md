@@ -18,7 +18,7 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 | Processes | `hatchbox_list_processes`, `hatchbox_get_process` | `hatchbox_create_process`, `hatchbox_update_process`, `hatchbox_delete_process`, `hatchbox_enable_process`, `hatchbox_disable_process`, `hatchbox_restart_process` |
 | Cron jobs | `hatchbox_list_cron_jobs`, `hatchbox_get_cron_job` | `hatchbox_create_cron_job`, `hatchbox_update_cron_job`, `hatchbox_delete_cron_job` |
 | Databases | `hatchbox_list_app_databases`, `hatchbox_get_app_database`, `hatchbox_list_cluster_databases`, `hatchbox_get_cluster_database` | `hatchbox_create_database`, `hatchbox_update_database`, `hatchbox_attach_database`, `hatchbox_detach_database` |
-| Clusters | `hatchbox_get_cluster` (embeds servers) | — |
+| Clusters | `hatchbox_get_cluster` (embeds servers) | `hatchbox_update_cluster` (maintenance window) |
 | Servers | `hatchbox_list_servers`, `hatchbox_get_server` | `hatchbox_provision_server`, `hatchbox_reboot_server` |
 | Firewall rules | `hatchbox_list_firewall_rules`, `hatchbox_get_firewall_rule` | `hatchbox_create_firewall_rule`, `hatchbox_delete_firewall_rule` |
 | App containers (Dockerfile clusters) | `hatchbox_get_app_container` | `hatchbox_update_app_container` |
@@ -37,6 +37,8 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 On a Dockerfile cluster (the cluster's `deploy_strategy` is `docker`), each process is a container: `hatchbox_create_process`/`hatchbox_update_process` also take `stop_timeout`, `memory_mb` and `cpus`, merged into the process's own so an update can pass one, and the process record shows them under `container`. `hatchbox_update_app_container` changes only the settings it's given, and they apply on the next deploy. The container and accessory tools fail with a 422 on a native cluster.
 
 `hatchbox_update_app` rejects the `name` field entirely (422) — renaming moves the app's directory and rewrites server config, so it's handled separately by `hatchbox_rename_app`, which also 422s if the new name is unchanged, blank, contains characters other than letters/numbers/hyphens/underscores, or is already taken by another app in the same cluster.
+
+`hatchbox_update_cluster` changes only the cluster's weekly maintenance window: `maintenance_wday` (0 = Sunday), `maintenance_hour` (0-23) and `maintenance_time_zone` (an IANA name such as `America/Chicago` or `Etc/UTC`). A window needs all three, and passing `null` for all three removes it. The cluster's `next_maintenance_window_at` is in UTC; each server's `nightly_upgrade_time` is in the window's zone.
 
 ## Setup
 
