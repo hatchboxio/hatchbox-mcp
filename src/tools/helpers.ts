@@ -37,3 +37,12 @@ export async function runAction(fn: () => Promise<ToolResult>): Promise<ToolResu
     return errorResult(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
+
+/** Copies the arguments named in a tool's field schema that were passed, so an update sends only what changed. */
+export function pickDefined(args: Record<string, unknown>, fields: Record<string, unknown>): Record<string, unknown> {
+  const picked: Record<string, unknown> = {};
+  for (const key of Object.keys(fields)) {
+    if (args[key] !== undefined) picked[key] = args[key];
+  }
+  return picked;
+}
