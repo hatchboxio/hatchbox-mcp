@@ -161,9 +161,9 @@ export function registerAppsTools(server: McpServer, client: HatchboxClient) {
         rebuild: z
           .boolean()
           .describe(
-            "Dockerfile clusters only (cluster deploy_strategy 'docker', see hatchbox_get_cluster). A deploy of a commit " +
-              "that's already built reuses its image, so true builds it again with `docker build --no-cache` under an " +
-              "image tag of its own, then deploys. Use it when something the build reads changed without a new commit: " +
+            "Dockerfile clusters only (cluster deploy_strategy 'docker', see hatchbox_get_cluster). A normal deploy " +
+              "reuses the image already built for the commit; true builds it again with `docker build --no-cache` " +
+              "under its own image tag, then deploys. Use it when something the build reads changed without a new commit: " +
               "env vars the Dockerfile mounts as build secrets, the Dockerfile path or the app's subdirectory, or the " +
               "Dockerfile Hatchbox generates. Slower: it takes as long as a first build. On a native cluster the " +
               "deploy is refused with a 422 ('rebuild is only for apps on Dockerfile clusters'). Omit for a normal deploy.",
