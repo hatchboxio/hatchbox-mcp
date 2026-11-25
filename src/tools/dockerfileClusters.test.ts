@@ -19,7 +19,8 @@ describe("Dockerfile cluster tools", () => {
     await Promise.all([server.connect(serverTransport), mcp.connect(clientTransport)]);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await mcp.close();
     vi.unstubAllGlobals();
   });
 

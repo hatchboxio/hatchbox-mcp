@@ -45,18 +45,15 @@ const containerWriteFields = {
     .optional(),
 };
 
-const CONTAINER_WRITE_KEYS = Object.keys(containerWriteFields) as (keyof typeof containerWriteFields)[];
-
 export function registerContainersTools(server: McpServer, client: HatchboxClient) {
   server.registerTool(
     "hatchbox_get_app_container",
     {
       title: "Get App Container Settings",
       description:
-        "Fetch how an app on a Dockerfile cluster (cluster deploy_strategy 'docker') is built and run: its Dockerfile, " +
-        "build target, health check timeout, pre-deploy command, volumes, asset path and whether workers stop first, " +
-        "plus container_port, the port the live release's web process listens on (read from the Dockerfile's EXPOSE " +
-        "on each deploy, so it can't be set). Fails with a 422 for an app on a native cluster.",
+        "Fetch how an app on a Dockerfile cluster (cluster deploy_strategy 'docker') is built and run: the settings " +
+        "hatchbox_update_app_container changes, plus container_port, the port the live release's web process listens " +
+        "on (read from the Dockerfile's EXPOSE on each deploy, so it can't be set). Fails with a 422 for an app on a native cluster.",
       inputSchema: appIdSchema,
       annotations: READ_ONLY,
     },
@@ -74,13 +71,8 @@ export function registerContainersTools(server: McpServer, client: HatchboxClien
       inputSchema: { ...appIdSchema, ...containerWriteFields },
       annotations: WRITE,
     },
-    async (args) =>
-      runAction(async () => {
-        const container: Record<string, unknown> = {};
-        for (const key of CONTAINER_WRITE_KEYS) {
-          if (args[key] !== undefined) container[key] = args[key];
-        }
-        return jsonResult(await client.patch(`/apps/${args.app_id}/container`, { container }));
-      }),
+    // Omitted fields are undefined, which JSON.stringify drops
+    async ({ app_id, ...container }) =>
+      runAction(async () => jsonResult(await client.patch(`/apps/${app_id}/container`, { container }))),
   );
 }

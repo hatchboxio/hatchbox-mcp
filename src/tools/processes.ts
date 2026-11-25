@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { HatchboxClient } from "../client.js";
-import { jsonResult, READ_ONLY, runAction, textResult, WRITE } from "./helpers.js";
+import { jsonResult, pickDefined, READ_ONLY, runAction, textResult, WRITE } from "./helpers.js";
 
 const appIdSchema = {
   app_id: z.number().int().describe("Numeric app id."),
@@ -47,9 +47,8 @@ const processWriteFields = {
   appsignal_options: z.string().describe("Extra CLI options passed to appsignal-wrap when appsignal is enabled.").optional(),
 };
 
-// Only apply on a Dockerfile cluster (cluster deploy_strategy "docker"), where each process is a container.
 // Sent nested under `container` and merged server-side, so passing one leaves the others as they are.
-const containerWriteFields = {
+const processContainerFields = {
   stop_timeout: z
     .number()
     .int()
@@ -73,21 +72,10 @@ const containerWriteFields = {
     .optional(),
 };
 
-const PROCESS_WRITE_KEYS = Object.keys(processWriteFields) as (keyof typeof processWriteFields)[];
-const CONTAINER_WRITE_KEYS = Object.keys(containerWriteFields) as (keyof typeof containerWriteFields)[];
-
 function processParams(args: Record<string, unknown>): Record<string, unknown> {
-  const process: Record<string, unknown> = {};
-  for (const key of PROCESS_WRITE_KEYS) {
-    if (args[key] !== undefined) process[key] = args[key];
-  }
-
-  const container: Record<string, unknown> = {};
-  for (const key of CONTAINER_WRITE_KEYS) {
-    if (args[key] !== undefined) container[key] = args[key];
-  }
+  const process = pickDefined(args, processWriteFields);
+  const container = pickDefined(args, processContainerFields);
   if (Object.keys(container).length > 0) process.container = container;
-
   return process;
 }
 
@@ -127,7 +115,7 @@ export function registerProcessesTools(server: McpServer, client: HatchboxClient
       inputSchema: {
         ...appIdSchema,
         ...processWriteFields,
-        ...containerWriteFields,
+        ...processContainerFields,
         name: z.string().regex(PROCESS_NAME_REGEX).describe("Process name, letters/numbers/underscore/hyphen only. Unique per app."),
         start_command: z.string().describe("Shell command that starts the process."),
       },
@@ -145,7 +133,7 @@ export function registerProcessesTools(server: McpServer, client: HatchboxClient
     {
       title: "Update App Process",
       description: "Update a process on a Hatchbox app. Only the fields you pass are changed. Asynchronous — returns a log_id, follow up with hatchbox_get_log.",
-      inputSchema: { ...processIdSchema, ...processWriteFields, ...containerWriteFields },
+      inputSchema: { ...processIdSchema, ...processWriteFields, ...processContainerFields },
       annotations: WRITE,
     },
     async (args) =>

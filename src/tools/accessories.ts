@@ -25,16 +25,6 @@ const accessorySettingsFields = {
     .optional(),
 };
 
-const ACCESSORY_SETTINGS_KEYS = Object.keys(accessorySettingsFields) as (keyof typeof accessorySettingsFields)[];
-
-function settingsParams(args: Record<string, unknown>): Record<string, unknown> {
-  const accessory: Record<string, unknown> = {};
-  for (const key of ACCESSORY_SETTINGS_KEYS) {
-    if (args[key] !== undefined) accessory[key] = args[key];
-  }
-  return accessory;
-}
-
 export function registerAccessoriesTools(server: McpServer, client: HatchboxClient) {
   server.registerTool(
     "hatchbox_list_accessories",
@@ -82,11 +72,9 @@ export function registerAccessoriesTools(server: McpServer, client: HatchboxClie
       },
       annotations: WRITE,
     },
-    async (args) =>
-      runAction(async () => {
-        const accessory = { name: args.name, kind: args.kind, server_id: args.server_id, ...settingsParams(args) };
-        return jsonResult(await client.post(`/clusters/${args.cluster_id}/accessories`, { accessory }));
-      }),
+    // Omitted fields are undefined, which JSON.stringify drops
+    async ({ cluster_id, ...accessory }) =>
+      runAction(async () => jsonResult(await client.post(`/clusters/${cluster_id}/accessories`, { accessory }))),
   );
 
   server.registerTool(
@@ -100,12 +88,8 @@ export function registerAccessoriesTools(server: McpServer, client: HatchboxClie
       inputSchema: { ...accessoryIdSchema, ...accessorySettingsFields },
       annotations: WRITE,
     },
-    async (args) =>
-      runAction(async () =>
-        jsonResult(
-          await client.patch(`/clusters/${args.cluster_id}/accessories/${args.accessory_id}`, { accessory: settingsParams(args) }),
-        ),
-      ),
+    async ({ cluster_id, accessory_id, ...accessory }) =>
+      runAction(async () => jsonResult(await client.patch(`/clusters/${cluster_id}/accessories/${accessory_id}`, { accessory }))),
   );
 
   server.registerTool(
