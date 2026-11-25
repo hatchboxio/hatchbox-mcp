@@ -172,9 +172,10 @@ export function registerAppsTools(server: McpServer, client: HatchboxClient) {
       },
       annotations: WRITE,
     },
+    // JSON.stringify drops undefined, so sha is sent only when given and rebuild only when true
     async ({ app_id, sha, rebuild }) =>
       runAction(async () =>
-        jsonResult(await client.post(`/apps/${app_id}/deploy`, { ...(sha ? { sha } : {}), ...(rebuild ? { rebuild: true } : {}) })),
+        jsonResult(await client.post(`/apps/${app_id}/deploy`, { sha: sha || undefined, rebuild: rebuild || undefined })),
       ),
   );
 
