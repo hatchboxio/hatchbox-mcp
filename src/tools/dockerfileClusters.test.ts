@@ -40,10 +40,29 @@ describe("Dockerfile cluster tools", () => {
     expect(lastRequest().body).toEqual({ process: { start_command: "bin/jobs" } });
   });
 
-  it("updates only the app container settings passed", async () => {
-    await mcp.callTool({ name: "hatchbox_update_app_container", arguments: { app_id: 1, container_port: 8080, volumes: ["data:/data"] } });
+  it("removes a process's memory limit with null", async () => {
+    await mcp.callTool({ name: "hatchbox_update_process", arguments: { app_id: 1, process_id: 2, memory_mb: null } });
 
-    expect(lastRequest()).toEqual({ method: "PATCH", path: "/apps/1/container", body: { container: { container_port: 8080, volumes: ["data:/data"] } } });
+    expect(lastRequest().body).toEqual({ process: { container: { memory_mb: null } } });
+  });
+
+  it("updates only the app container settings passed", async () => {
+    await mcp.callTool({
+      name: "hatchbox_update_app_container",
+      arguments: { app_id: 1, build_target: "production", volumes: ["data:/data"] },
+    });
+
+    expect(lastRequest()).toEqual({
+      method: "PATCH",
+      path: "/apps/1/container",
+      body: { container: { build_target: "production", volumes: ["data:/data"] } },
+    });
+  });
+
+  it("sends stop_workers_first when it's false", async () => {
+    await mcp.callTool({ name: "hatchbox_update_app_container", arguments: { app_id: 1, stop_workers_first: false } });
+
+    expect(lastRequest().body).toEqual({ container: { stop_workers_first: false } });
   });
 
   it("creates an accessory from a preset and attaches and detaches it by app id", async () => {

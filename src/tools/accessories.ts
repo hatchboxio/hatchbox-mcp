@@ -139,8 +139,9 @@ export function registerAccessoriesTools(server: McpServer, client: HatchboxClie
     {
       title: "Attach Accessory to App",
       description:
-        "Give an app on the same cluster the env vars to reach an accessory: <PREFIX>_HOST and _PORT, plus _PROTOCOL " +
-        "and _API_KEY for Typesense or _API_KEY for Meilisearch. The prefix defaults to TYPESENSE, MEILISEARCH or the " +
+        "Give an app on the same cluster the env vars to reach an accessory: <PREFIX>_HOST, _PORT, _PROTOCOL and " +
+        "_API_KEY for Typesense; <PREFIX>_HOST (a full http:// URL) and _API_KEY for Meilisearch; <PREFIX>_HOST and " +
+        "_PORT for a custom image. The prefix defaults to TYPESENSE, MEILISEARCH or the " +
         "accessory's name. The app's servers get the new env vars right away; returns the accessory with its attachments.",
       inputSchema: {
         ...accessoryIdSchema,

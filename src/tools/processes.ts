@@ -61,12 +61,15 @@ const containerWriteFields = {
     .number()
     .int()
     .min(64)
-    .describe("Dockerfile clusters only. Memory limit per container in megabytes; one that runs out is killed and restarted.")
+    .nullable()
+    .describe("Dockerfile clusters only. Memory limit per container in megabytes; one that runs out is killed and restarted. null removes the limit.")
     .optional(),
   cpus: z
     .number()
-    .positive()
-    .describe("Dockerfile clusters only. CPU limit per container, like 0.5 or 2. Capped at the server's CPU count.")
+    .min(0.01)
+    .max(1024)
+    .nullable()
+    .describe("Dockerfile clusters only. CPU limit per container, like 0.5 or 2. Capped at the server's CPU count. null removes the limit.")
     .optional(),
 };
 
