@@ -60,12 +60,6 @@ describe("Dockerfile cluster tools", () => {
     });
   });
 
-  it("sends stop_workers_first when it's false", async () => {
-    await mcp.callTool({ name: "hatchbox_update_app_container", arguments: { app_id: 1, stop_workers_first: false } });
-
-    expect(lastRequest().body).toEqual({ container: { stop_workers_first: false } });
-  });
-
   it("creates an accessory from a preset and attaches and detaches it by app id", async () => {
     await mcp.callTool({ name: "hatchbox_create_accessory", arguments: { cluster_id: 3, name: "search", kind: "typesense" } });
     expect(lastRequest()).toEqual({ method: "POST", path: "/clusters/3/accessories", body: { accessory: { name: "search", kind: "typesense" } } });

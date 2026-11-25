@@ -108,9 +108,9 @@ export function registerProcessesTools(server: McpServer, client: HatchboxClient
     {
       title: "Create App Process",
       description:
-        "Create a new process (web/worker/cron) on a Hatchbox app. Requires name and start_command (on a Dockerfile " +
-          "cluster start_command may be blank to run the image's own command). Set either " +
-        "server_id or roles to control where it runs (not both) — omit both to leave it unscheduled. Asynchronous " +
+        "Create a new process (web/worker/cron) on a Hatchbox app. Requires name and start_command; on a Dockerfile " +
+        "cluster start_command may be blank to run the image's own command. Set either server_id or roles to " +
+        "control where it runs (not both) — omit both to leave it unscheduled. Asynchronous " +
         "— returns a log_id, follow up with hatchbox_get_log.",
       inputSchema: {
         ...appIdSchema,
