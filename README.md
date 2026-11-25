@@ -34,6 +34,8 @@ One tool per operation, each with a `readOnlyHint` or `destructiveHint` annotati
 
 `hatchbox_update_app` rejects the `name` field entirely (422) — renaming moves the app's directory and rewrites server config, so it's handled separately by `hatchbox_rename_app`, which also 422s if the new name is unchanged, blank, contains characters other than letters/numbers/hyphens/underscores, or is already taken by another app in the same cluster.
 
+`hatchbox_deploy_app` takes `rebuild: true` for an app on a Dockerfile cluster (the cluster's `deploy_strategy` is `docker`): instead of reusing the image already built for the commit, it builds it again with `docker build --no-cache`, so changed build secrets, Dockerfile path or subdirectory, or the generated Dockerfile take effect without a new commit. It takes as long as a first build, and an app on a native cluster gets a 422.
+
 `hatchbox_update_cluster` changes only the cluster's weekly maintenance window: `maintenance_wday` (0 = Sunday), `maintenance_hour` (0-23) and `maintenance_time_zone` (an IANA name such as `America/Chicago` or `Etc/UTC`). A window needs all three, and passing `null` for all three removes it. The cluster's `next_maintenance_window_at` is in UTC; each server's `nightly_upgrade_time` is in the window's zone.
 
 ## Setup
